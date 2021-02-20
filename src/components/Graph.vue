@@ -442,7 +442,7 @@
           let node = xmlDocument.documentElement;
           that.$store.dispatch("setGraphId", graph_id);
           that.$store.commit("SET_GRAPH_NAME", graph_name);
-          that.$store.dispatch("setGraphStatus", active ? 'deployed' : 'undeployed');
+          //that.$store.dispatch("setGraphStatus", active ? 'deployed' : 'undeployed');
           decoder.decode(node, editor.graph.getModel());
           let cell0 = editor.graph.getModel().getCell(0);
           let version = cell0.version;

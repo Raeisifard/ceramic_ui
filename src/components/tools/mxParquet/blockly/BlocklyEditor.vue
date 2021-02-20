@@ -1,37 +1,38 @@
 <template>
-    <EditorComponent class="editor_component" :options="options"/>
+  <EditorComponent class="editor_component" :options="options"/>
 </template>
 
 <script>
-  import EditorComponent from './components/EditorComponent.vue'
-  import Blockly from 'blockly';
-  import BlocklyJS from 'blockly/javascript';
-  import './blocks/pattern';
-  import { EventBus } from '../../../../event-bus.js';
+import EditorComponent from './components/EditorComponent.vue'
+import Blockly from 'blockly';
+import BlocklyJS from 'blockly/javascript';
+import './blocks/pattern';
+import { EventBus } from '../../../../event-bus.js';
 
-  export default {
-    name: 'BlocklyEditor',
-    components: {
-      EditorComponent
-    },
-    props: [],
-    data() {
-      return {
-        workspace: null,
-        options: {
-          grid:
+export default {
+  name: 'BlocklyEditor',
+  components: {
+    EditorComponent
+  },
+  props: [],
+  data() {
+    return {
+      workspace: null,
+      options: {
+        comments: false,
+        grid:
             {
               spacing: 25,
               length: 3,
               colour: '#ccc',
               snap: true
             },
-          move: {
-            scrollbars: true,
-            drag: true,
-            wheel: true
-          },
-          zoom:
+        move: {
+          scrollbars: true,
+          drag: true,
+          wheel: true
+        },
+        zoom:
             {
               controls: true,
               wheel: true,
@@ -40,10 +41,10 @@
               minScale: 0.3,
               scaleSpeed: 1.2
             },
-          readOnly: false,
-          media: './media/',
-          trashcan: true,
-          toolbox:
+        readOnly: false,
+        media: './media/',
+        trashcan: true,
+        toolbox:
             `<xml>
           <category name="Pattern" colour="60">
             <block type="pattern_freemarker_text"></block>
@@ -51,8 +52,15 @@
             <block type="pattern_freemarker_interpolate"></block>
             <block type="pattern_freemarker_has_content"></block>
             <block type="pattern_freemarker_if_exists"></block>
-            <block type="pattern_freemaker_concat"></block>
-            <block type="pattern_freemaker_linefeed"></block>
+            <block type="pattern_freemarker_concat"></block>
+            <block type="pattern_freemarker_linefeed"></block>
+            <block type="pattern_freemarker_enter"></block>
+          </category>
+          <category name="Xml" colour="240">
+            <block type="xml_element"></block>
+            <block type="xml_attribute_string"></block>
+            <block type="xml_attribute_number"></block>
+            <block type="xml_attribute_boolean"></block>
           </category>
           <category name="Logic" colour="#5b80a5">
             <block type="controls_if"></block>
@@ -442,25 +450,25 @@
           <category name="Variables" custom="VARIABLE" colour="%{BKY_VARIABLES_HUE}">
             </category>-->
         </xml>`
-        }
       }
-    },
-    mounted() {
-      const favicon = document.getElementById("favicon");
-      favicon.href = "./blockly/favicon.ico";
-      //document.title = "Parquet 1.0.0"
-    },
-    beforeCreate() {
-      //document.title = "Parquet 1.0.0"
     }
+  },
+  mounted() {
+    const favicon = document.getElementById("favicon");
+    favicon.href = "./blockly/favicon.ico";
+    //document.title = "Parquet 1.0.0"
+  },
+  beforeCreate() {
+    //document.title = "Parquet 1.0.0"
   }
+}
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-    .editor_componentv {
-        height: 100%;
-        width: 100%;
-        text-align: left;
-    }
+.editor_componentv {
+  height: 100%;
+  width: 100%;
+  text-align: left;
+}
 </style>

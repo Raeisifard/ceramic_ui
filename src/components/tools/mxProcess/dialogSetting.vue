@@ -40,7 +40,8 @@
       },
       send(evt) {
         this.save();
-        this.$store.dispatch("setData2JsonGraph", {data:this.cell.getData().setting,id:this.cell.getId(),type: this.cell.getType()});//, this.cell.type, this.cell.id);
+        this.$store.dispatch("sendSetting2VX", this.cell);
+        //this.$store.dispatch("setData2JsonGraph", {data:this.cell.getData().setting,id:this.cell.getId(),type: this.cell.getType()});//, this.cell.type, this.cell.id);
         window.easyDialog.close();
       },
       cancel(evt) {

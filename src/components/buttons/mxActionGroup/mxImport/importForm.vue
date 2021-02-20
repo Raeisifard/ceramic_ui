@@ -33,9 +33,20 @@
         if (xmlDocument.documentElement != null && xmlDocument.documentElement.nodeName == 'mxGraphModel') {
           let decoder = new mxCodec(xmlDocument);
           let node = xmlDocument.documentElement;
-          decoder.decode(node, editor.graph.getModel());
-          //that.setVueComponents(that.graph.getModel());//Inject vue components to related mxCell
-          //EventBus.$emit("mx.set_vue_component", editor.graph.getModel());
+          let model = editor.graph.getModel();
+          let oldUid = model.getCell(0).uid.trim();
+          decoder.decode(node, model);
+          let uid = model.getCell(0).uid;
+          if (uid.trim().length === 0){
+            uid = oldUid;
+            model.getCell(0).uid = uid;
+          }
+          let version = model.getCell(0).version;
+          let name = model.getCell(0).name;
+          let context = that.store;
+          context.dispatch("setGraphId", uid);
+          context.dispatch("setVersion", version);
+          context.dispatch("setGraphName", name);
         }
         that.$emit('wndClose');
       })

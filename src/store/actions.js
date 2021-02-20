@@ -11,6 +11,9 @@ export default {
     //TODO check version number with state-version and return true if the version is compatible.
     return true;
   },
+  setVersion: (context, version) => {
+    context.commit("SET_VERSION", version);
+  },
   showSplash: (context, show) => {       // Add this:
     context.commit("SHOW_SPLASH", show);
   },
@@ -94,7 +97,7 @@ export default {
         console.dir(e);
       }
     let bc = context.getters.getBc;
-    if (bc != null && id != null){
+    if (bc != null && id != null) {
       bc.close();
     }
     id = graphId;
@@ -155,6 +158,10 @@ export default {
     });
   },
   sendSetting2VX: (context, cell) => {
+    let status = context.getters.getGraphStatus;
+    if (status === 'undeployed'){
+      return -1;//The Graph must already deployed!
+    }
     let eb = context.getters.getEb;
     if (eb.state !== CONNECTION_STATUS.OPEN)
       return -1;

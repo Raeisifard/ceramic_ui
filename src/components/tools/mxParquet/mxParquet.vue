@@ -113,7 +113,7 @@ export default {
       this.iframe = frame;
       let wnd = new mxWindow('Parquet Editor ver 1.0.0', frame, 0, 0, window.innerWidth, window.innerHeight, false, false);
       wnd.setClosable(true);
-      wnd.setImage('/src/images/freemaker20.png');
+      wnd.setImage('/src/images/freemarker20.png');
       wnd.setVisible(true);
       frame.contentWindow.focus();
       let elm = wnd.getElement();

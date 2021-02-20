@@ -82,7 +82,7 @@ export default {
       switch (event) {
         case 'save':
           this.bc.postMessage({
-            cmd: 'setCellCode',gid: this.gid, cid: this.cid,
+            cmd: 'setCellCode', gid: this.gid, cid: this.cid,
             xml: Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)),
             code: Blockly[ 'JavaScript' ].workspaceToCode(this.workspace)
           });
@@ -133,8 +133,7 @@ export default {
     }
     this.workspace = Blockly.inject(this.$refs[ "blocklyDiv" ], options);
     let urlParams = new URLSearchParams(window.location.search);
-    debugger;
-    console.dir(urlParams);
+    //console.dir(urlParams);
     if (urlParams.has('gid'))
       this.gid = urlParams.get('gid');
     if (urlParams.has('cid'))
@@ -143,7 +142,8 @@ export default {
     this.bc = this.$store.getters.getBc;
     this.bc.postMessage({ cmd: 'getCellData', gid: this.gid, cid: this.cid });
     this.bc.onmessage = function(ev) {
-      if (ev.data.gid === that.gid && ev.data.cid === that.cid && ev.data.cmd && ev.data.cmd === 'setCellData') {
+      if (ev.data.gid === that.gid && ev.data.cid === that.cid
+          && ev.data.cmd && ev.data.cmd === 'setCellData' && ev.data.xml && ev.data.xml.trim().length > 0) {
         let xml = Blockly.Xml.textToDom(ev.data.xml);
         Blockly.Xml.domToWorkspace(xml, that.workspace);
       }

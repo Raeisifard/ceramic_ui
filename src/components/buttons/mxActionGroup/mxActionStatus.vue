@@ -104,6 +104,7 @@ export default {
       this.eb.send('mx.vx', mxUtils.getXml(node), headers, (err, res) => {
         if (err == null) {
           editor.setGraph(res.body, res.headers.graph_id, res.headers.graph_name, res.headers.active);
+          store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
           //store.dispatch("setGraphStatus", "deployed");
         } else {
           mxLog.warn("There is some error in deploying graph!");
@@ -134,7 +135,9 @@ export default {
       this.eb.send('mx.vx', mxUtils.getXml(node), headers, (err, res) => {
         if (err == null) {
           editor.setGraph(res.body, res.headers.graph_id, res.headers.graph_name, res.headers.active);
+          store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
         } else {
+          store.dispatch("setGraphStatus", "undeployed");
           mxLog.warn("There is some error in redeploying graph!");
           console.dir(err);
         }

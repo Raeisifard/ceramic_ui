@@ -274,7 +274,8 @@ function JsonObject() {
     "    </value>\n" +
     "  </block>\n" +
     "</xml>";
-  this.lang = "freemaker";
+  this.xml = "";
+  this.lang = "freemarker";
  /* this.kind = "trigger";
   this.state = "false";
   this.period = 0;
