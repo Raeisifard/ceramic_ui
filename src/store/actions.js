@@ -84,8 +84,14 @@ export default {
   },
   emit: (context, msg) => {
     let eb = context.getters.getEb;
-    msg.headers.graphId = context.getters.getGraphId;
-    eb.send("mx.vx", msg);
+    //msg.headers.graphId = context.getters.getGraphId;
+    eb.send("mx.vx", msg.body, msg.headers, (err, res) => {
+      if (err == null) {
+        mxLog.debug(JSON.stringify(res.body));
+      } else {
+        mxLog.warn(JSON.stringify(err));
+      }
+    });
   },
   setGraphId: (context, graphId) => {
     let eb = context.getters.getEb;

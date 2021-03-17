@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Editor from './views/Editor.vue'
-import mxWindow from './components/tools/mxComponents/mxWindow.vue'
 
 Vue.use(Router);
 
@@ -84,7 +83,20 @@ export default new Router({
         document.title = to.meta.title;
         next();
       }
-    }/*,
+    },
+    /*{
+      path: '/tinymce',
+      name: 'tinymce',
+      meta: {title: 'TinyMCE 5'},
+      component: function() {
+        return import('./components/tools/mxInfo/tinymce/TinyMCE.vue')
+      },
+      beforeEnter: (to, from, next) => {
+        document.title = to.meta.title;
+        next();
+      }
+    }*/
+    /*,
     {
       path: '/mx-window/:type',
       // You could also have named views at tho top

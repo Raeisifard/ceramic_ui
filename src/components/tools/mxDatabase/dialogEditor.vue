@@ -105,7 +105,7 @@
       saveCode(evt) {
         let data = this.cell.getData();
         data.setting.query = this.query;
-        data.dbType = evt.dbType;
+        //data.dbType = evt.dbType;
         data.theme = evt.theme;
         //data = { ...data, ...evt };
         this.cell.setData(data);

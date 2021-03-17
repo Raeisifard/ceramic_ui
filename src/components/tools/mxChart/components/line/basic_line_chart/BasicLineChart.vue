@@ -1,7 +1,7 @@
 <script>
   import { Line } from "vue-chartjs";
   import { mapState } from "vuex";
-  import { EventBus } from "../../../../../../event-bus";
+  import { EventBus } from "@/event-bus";
 
   export default {
     extends: Line,
@@ -27,7 +27,8 @@
       store: {
         type: Object,
         default: null
-      }
+      },
+      styles: {}
     },
     methods: {
       fillData01() {
@@ -104,12 +105,19 @@
         EventBus.$emit(`${this.graphId}.${this.cell.getType()}.${this.cell.getId()}.trigger`.toLowerCase(), { body: { signal: "ready" } });
       this.renderChart(this.chartData, this.options);
     },
-    /*watch: {
-      code(val) {
+    watch: {
+      /*code(val) {
         this.adaptor = new Function("chartData", "msg", "options", "ctx", val);
         this.renderChart(this.chartData, this.options);
+      }*/
+      styles: function(n, o) {
+        this.$el.parentElement.parentElement.setAttribute("width", this.cell.geometry.width);
+        this.$el.parentElement.parentElement.setAttribute("height", this.cell.geometry.height);
+        //this.console.log(this.$el.parentElement.parentElement.parentElement.nodeName);
+        this.$el.parentElement.parentElement.parentElement.setAttribute("transform", `translate(${this.cell.geometry.x}, ${this.cell.geometry.y})`);
+        this.console.log("styles");
       }
-    },*/
+    },
   }
 </script>
 

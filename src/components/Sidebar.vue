@@ -11,7 +11,7 @@
         <!--<mx-pattern :sidebar="sidebar"></mx-pattern>-->
         <mx-parquet :sidebar="sidebar"></mx-parquet>
         <mx-buffer :sidebar="sidebar"></mx-buffer>
-        <mx-website :sidebar="sidebar"></mx-website>
+        <mx-info :sidebar="sidebar"></mx-info>
         <!--<mx-keys :sidebar="sidebar"></mx-keys>
         <mx-new-mail :sidebar="sidebar"></mx-new-mail>
         <mx-server :sidebar="sidebar"></mx-server>-->
@@ -21,7 +21,7 @@
 <script>
   import mxProcess from './tools/mxProcess/mxProcess.vue';
   import mxSwitch from './tools/mxSwitch/mxSwitch.vue';
-  import mxWebsite from './tools/mxWebsite/mxWebsite.vue';
+  import mxInfo from './tools/mxInfo/mxInfo.vue';
   import mxKeys from './tools/mxKeys.vue';
   import MxNewMail from "./tools/mxNewMail";
   import MxServer from "./tools/mxServer";
@@ -47,7 +47,7 @@
       MxParquet,
       MxServer,
       MxNewMail,
-      mxWebsite,
+      mxInfo,
       mxProcess,
       mxSwitch,
       mxKeys

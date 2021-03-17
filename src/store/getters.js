@@ -46,8 +46,8 @@ export default {
   },
   getBc: state => {
     if (state.bc == null) {
-      // Connection to a broadcast channel
-      state.bc = new BroadcastChannel(state.graphId);
+    // Connection to a broadcast channel
+    state.bc = new BroadcastChannel(state.graphId);
     }
     return state.bc;
   },

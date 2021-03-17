@@ -84,7 +84,7 @@ export default {
           // rather than the label markup, so use 'image=' + image for the style.
           // as follows: v1 = graph.insertVertex(parent, null, label,
           // pt.x, pt.y, 120, 120, 'image=' + image);
-          let width = 120, height = 120, xOffset = -8, yOffset = -8, portWidth = 16, portHeight = 16,
+          let width = 96, height = 96, xOffset = -8, yOffset = -8, portWidth = 16, portHeight = 16,
               alternateWidth = 120, alternateHeight = 40;
           let jo = new JsonObject()
           v1 = graph.insertVertex(parent, null, label, x, y, width, height, jo.type);
@@ -117,7 +117,7 @@ export default {
 
         graph.setSelectionCell(v1);
       };
-      let dashStyle = { width: 120, height: 120 };
+      let dashStyle = { width: 96, height: 96 };
 
       // Creates the image which is used as the sidebar icon (drag source)
       let img = document.createElement('img');
@@ -148,8 +148,7 @@ export default {
         if (this.isCellCollapsed(cell))
           return `<h2>${cell.getData().fName}</h2>`;
         else
-          return `<h1 style="margin:0;">${cell.getType().charAt(0).toUpperCase() + cell.getType().slice(1)}</h1><br>
-                    <img src="/src/images/icons48/process.png" width="48" height="48">`;
+          return `<h1 style="margin:0;">${cell.getType().charAt(0).toUpperCase() + cell.getType().slice(1)}</h1><img src="/src/images/icons48/process.png" width="48" height="48">`;
       }
       return graphConvertValueToString.apply(this, arguments);
     };

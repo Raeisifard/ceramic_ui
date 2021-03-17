@@ -23,7 +23,7 @@
     mounted() {
       const that = this;
       mxEvent.addListener(this.$el, 'click', function(evt) {
-        that.editor.execute(that.action);
+        that.editor.execute(that.action, that.editor.graph.getSelectionCell());
       });
     }
   }

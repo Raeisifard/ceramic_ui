@@ -123,15 +123,66 @@ mxLog.init = function() {
       if (cmdSplit.length > 0) {
         let cmd = cmdSplit[ 0 ];
         switch (cmd.toLowerCase()) {
+          case "save":
+            let graphId = window.store.getters.getGraphId;
+            let graphName = window.store.getters.getGraphName;
+            let graphStatus = window.store.getters.getGraphStatus;
+            if (graphStatus === 'deployed' && !( cmdSplit[ 1 ] && cmdSplit[ 1 ].toLowerCase() === '-force' )) {
+                mxLog.warn("Graph is active at the time. Can't save it!")
+            }
+            mxLog.writeln(`Saving the graph...`);
+            let enc = new mxCodec(mxUtils.createXmlDocument());
+            let model =  window.store.getters.getModel;
+            let node = enc.encode(model);
+            let msg = {};
+            msg.headers = {};
+            msg.headers.cmd = "save";
+            msg.headers.uid = graphId;
+            msg.headers.name = graphName;
+            msg.body = mxUtils.getXml(node);
+            window.store.dispatch("emit", msg);
+            break;
           case "rename":
             //let editor = window.store.getters.getEditor;
             if (cmdSplit[ 1 ]) {
               let oldName = window.store.getters.getGraphName;
               window.store.dispatch("setGraphName", cmdSplit[ 1 ]);
               mxLog.debug(oldName + " => " + window.store.getters.getGraphName);
-            }else{
+            } else {
               mxLog.warn("\"Rename\" command: Name parameter is missing!")
             }
+            break;
+          case "remove":
+            if (cmdSplit[ 1 ]) {
+              let graphId = cmdSplit[ 1 ];
+              mxLog.writeln(`Remove graph...`);
+              let msg = {};
+              msg.headers = {};
+              msg.headers.cmd = "remove";
+              msg.headers.uid = graphId;
+              msg.headers.name = "";
+              msg.body = graphId;
+              window.store.dispatch("emit", msg);
+            } else {
+              mxLog.warn(`Are you sure to remove current graph: 
+                ${window.store.getters.getGraphName} (${window.store.getters.getGraphId})?[y/n]`);
+              e.target.input_state = "remove";
+              e.target.input_cmd = `remove ${window.store.getters.getGraphId}`;
+            }
+            break;
+          case "y":
+          case "Y":
+            let input_state = e.target.input_state;
+            let input_cmd = e.target.input_cmd;
+            e.target.value = input_cmd;
+            validate(e);
+            input_state = "";
+            input_cmd = "";
+            break;
+          case "n":
+          case "N":
+            e.target.input_state = "";
+            e.target.input_cmd = "";
             break;
         }
       }

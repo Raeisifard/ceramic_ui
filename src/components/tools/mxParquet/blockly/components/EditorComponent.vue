@@ -1,57 +1,39 @@
 <template>
-  <div>
-    <div style="background-color: #ddd">
-      <LinkButton :plain="true">Home</LinkButton>
-      <MenuButton text="File" :plain="true" iconCls="icon-file">
-        <Menu @itemClick="onItemClick($event)">
-          <MenuItem value="new" text="New"></MenuItem>
-          <MenuItem text="Open">
-            <SubMenu>
-              <MenuItem value="word" text="Word"></MenuItem>
-              <MenuItem value="excel" text="Excel"></MenuItem>
-              <MenuItem value="ppt" text="PowerPoint"></MenuItem>
-            </SubMenu>
-          </MenuItem>
-          <MenuItem value="save" text="Save" iconCls="icon-save"></MenuItem>
-          <MenuItem value="print" text="Print" iconCls="icon-print" :disabled="true"></MenuItem>
-          <Menu-sep></Menu-sep>
-          <MenuItem value="exit" text="Exit"></MenuItem>
-        </Menu>
-      </MenuButton>
-      <MenuButton text="Edit" :plain="true" iconCls="icon-edit">
-        <Menu @itemClick="onItemClick($event)">
-          <MenuItem value="undo" text="Undo" iconCls="icon-undo"></MenuItem>
-          <MenuItem value="redo" text="Redo" iconCls="icon-redo"></MenuItem>
-          <MenuSep></MenuSep>
-          <MenuItem text="Cut"></MenuItem>
-          <MenuItem text="Copy"></MenuItem>
-          <MenuItem text="Paste"></MenuItem>
-          <MenuSep></MenuSep>
-          <MenuItem text="Toolbar">
-            <SubMenu>
-              <MenuItem text="Address"></MenuItem>
-              <MenuItem text="Link"></MenuItem>
-              <MenuItem text="Navigation Toolbar"></MenuItem>
-              <MenuItem text="Bookmark Toolbar"></MenuItem>
-              <MenuSep></MenuSep>
-              <MenuItem text="New Toolbar..."></MenuItem>
-            </SubMenu>
-          </MenuItem>
-          <MenuItem text="Delete" iconCls="icon-remove"></MenuItem>
-          <MenuItem text="Select All"></MenuItem>
-        </Menu>
-      </MenuButton>
-      <MenuButton text="Help" :plain="true" iconCls="icon-help">
-        <Menu>
-          <MenuItem text="Help"></MenuItem>
-          <MenuItem text="Update"></MenuItem>
-          <MenuItem text="About"></MenuItem>
-        </Menu>
-      </MenuButton>
+  <div style="overflow: hidden">
+    <div style="background-color: #ddd;padding-top: 5px;padding-left: 10px;padding-bottom: 5px;">
+      <img class="l-btn-left l-btn-icon-top parquet-logo" style="margin-top: 5px;" src="/src/images/icons48/parquet.png"
+           width="48" height="48">
+      <LinkButton iconCls="icon-large-new" size="large" iconAlign="top" @click="newClicked">New</LinkButton>
+      <LinkButton iconCls="icon-large-save" size="large" iconAlign="top" @click="saveClicked">Save</LinkButton>
+      <LinkButton iconCls="icon-undo" size="large" iconAlign="top" @click="undoClicked">undo</LinkButton>
+      <LinkButton iconCls="icon-redo" size="large" iconAlign="top" @click="redoClicked">redo</LinkButton>
+      <!--      <MenuButton text="Edit" :plain="true" iconCls="icon-edit">
+              <Menu @itemClick="onItemClick($event)">
+                <MenuItem value="undo" text="Undo" iconCls="icon-undo"></MenuItem>
+                <MenuItem value="redo" text="Redo" iconCls="icon-redo"></MenuItem>
+                <MenuSep></MenuSep>
+                <MenuItem text="Cut"></MenuItem>
+                <MenuItem text="Copy"></MenuItem>
+                <MenuItem text="Paste"></MenuItem>
+                <MenuSep></MenuSep>
+                <MenuItem text="Toolbar">
+                  <SubMenu>
+                    <MenuItem text="Address"></MenuItem>
+                    <MenuItem text="Link"></MenuItem>
+                    <MenuItem text="Navigation Toolbar"></MenuItem>
+                    <MenuItem text="Bookmark Toolbar"></MenuItem>
+                    <MenuSep></MenuSep>
+                    <MenuItem text="New Toolbar..."></MenuItem>
+                  </SubMenu>
+                </MenuItem>
+                <MenuItem text="Delete" iconCls="icon-remove"></MenuItem>
+                <MenuItem text="Select All"></MenuItem>
+              </Menu>
+            </MenuButton>-->
       <MenuButton text="About" :plain="true">
         <Menu :noline="true">
           <div style="padding:10px">
-            <img src="https://www.jeasyui.com/images/logo1.png" style="width:150px;height:50px">
+            <img src="/src/images/parquet_about.png" style="width:120px;height:50px">
           </div>
         </Menu>
       </MenuButton>
@@ -64,7 +46,6 @@
 <script>
 import Blockly from 'blockly';
 import '../blocks/pattern';
-import { EventBus } from '../../../../../event-bus.js';
 
 export default {
   name: 'EditorComponent',
@@ -78,6 +59,22 @@ export default {
     }
   },
   methods: {
+    newClicked: function() {
+      this.workspace.clear();
+    },
+    saveClicked: function() {
+      this.bc.postMessage({
+        cmd: 'setCellCode', gid: this.gid, cid: this.cid,
+        xml: Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)),
+        code: Blockly[ 'JavaScript' ].workspaceToCode(this.workspace)
+      });
+    },
+    undoClicked: function() {
+      Blockly.mainWorkspace.undo(false);
+    },
+    redoClicked: function() {
+      Blockly.mainWorkspace.undo(true);
+    },
     onItemClick: function(event) {
       switch (event) {
         case 'save':
@@ -86,11 +83,6 @@ export default {
             xml: Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)),
             code: Blockly[ 'JavaScript' ].workspaceToCode(this.workspace)
           });
-          /* window.top.postMessage({
-             cmd: 'setCellCode',
-             xml: Blockly.Xml.domToText(Blockly.Xml.workspaceToDom(this.workspace)),
-             code: Blockly[ 'JavaScript' ].workspaceToCode(this.workspace)
-           }, '*');*/
           console.dir(Blockly[ 'JavaScript' ].workspaceToCode(this.workspace));
           break;
         case 'new':
@@ -110,11 +102,10 @@ export default {
     onresize: function(e) {
       let w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
       let h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-      //this.$el.style.backgroundColor = '#c0c0c0';
       this.$el.style.width = w + 'px';
       this.$el.style.height = h + 'px';
-      this.$refs[ "blocklyDiv" ].style.width = w + 'px';
-      this.$refs[ "blocklyDiv" ].style.height = h - 30 + 'px';
+      this.$refs[ "blocklyDiv" ].style.width = w - 5 + 'px';
+      this.$refs[ "blocklyDiv" ].style.height = h - 80 + 'px';
       Blockly.svgResize(this.workspace);
     }
   },
@@ -122,46 +113,33 @@ export default {
     let that = this;
     let w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
     let h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-    //this.$el.style.backgroundColor = '#c0c0c0';
     this.$el.style.width = w + 'px';
     this.$el.style.height = h + 'px';
-    this.$refs[ "blocklyDiv" ].style.width = w + 'px';
-    this.$refs[ "blocklyDiv" ].style.height = h - 30 + 'px';
+    this.$refs[ "blocklyDiv" ].style.width = w - 5 + 'px';
+    this.$refs[ "blocklyDiv" ].style.height = h - 80 + 'px';
     let options = this.$props.options || {};
     if (!options.toolbox) {
       options.toolbox = this.$refs[ "blocklyToolbox" ];
     }
     this.workspace = Blockly.inject(this.$refs[ "blocklyDiv" ], options);
     let urlParams = new URLSearchParams(window.location.search);
-    //console.dir(urlParams);
     if (urlParams.has('gid'))
       this.gid = urlParams.get('gid');
     if (urlParams.has('cid'))
       this.cid = urlParams.get('cid');
-
-    this.bc = this.$store.getters.getBc;
-    this.bc.postMessage({ cmd: 'getCellData', gid: this.gid, cid: this.cid });
+    this.bc = new BroadcastChannel(this.gid + ':parquet');
     this.bc.onmessage = function(ev) {
-      if (ev.data.gid === that.gid && ev.data.cid === that.cid
-          && ev.data.cmd && ev.data.cmd === 'setCellData' && ev.data.xml && ev.data.xml.trim().length > 0) {
+      if (ev.data.gid === that.gid && ev.data.cid === that.cid && ev.data.cmd
+          && ev.data.cmd === 'setCellData' && ev.data.xml && ev.data.xml.trim().length > 0) {
         let xml = Blockly.Xml.textToDom(ev.data.xml);
-        Blockly.Xml.domToWorkspace(xml, that.workspace);
+        //Blockly.Xml.domToWorkspace(xml, that.workspace);
+        Blockly.Xml.clearWorkspaceAndLoadFromXml(xml, that.workspace);
+        that.console.log("done");
       }
     }
-
-    /*window.top.postMessage({ cmd: 'getCellData' }, '*');
-    window.onmessage = function(e) {
-      if (e.data.cmd && e.data.cmd === 'setCellData') {
-        let xml = Blockly.Xml.textToDom(e.data.xml);
-        Blockly.Xml.domToWorkspace(xml, that.workspace);
-        //Blockly.svgResize(that.workspace);
-        //that.workspace.centerOnBlock(that.workspace.getAllBlocks(true)[0]);
-        //console.dir(that.workspace.getAllBlocks(true));
-      }
-    };*/
+    this.bc.postMessage({ cmd: 'getCellData', gid: this.gid, cid: this.cid });
 
     window.addEventListener('resize', this.onresize, false);
-    //this.onresize();
     Blockly.svgResize(that.workspace);
   },
   computed: {
@@ -178,4 +156,24 @@ export default {
     width: 100%;
     text-align: left;
 }*/
+.blocklyTreeRoot {
+  margin-top: 20px;
+}
+
+.icon-large-new {
+  background: url('icons/large_new.png') no-repeat center center;
+}
+
+.icon-large-save {
+  background: url('icons/large_save.png') no-repeat center center;
+}
+
+.l-btn-large {
+  margin: 2px;
+}
+
+.parquet-logo {
+  margin-top: 8px;
+  margin-right: 20px;
+}
 </style>

@@ -1,12 +1,7 @@
 const type = "PARQUET";
 
 function Config() {
-  this.Array = [1, 2, 3];
-  this.Boolean = true;
-  this.Null=null;
-  this.Number=123;
-  this.Object={"a":"b","c":"d"};
-  this.String = "Hello World";
+
 }
 
 function Setting() {
@@ -275,11 +270,8 @@ function JsonObject() {
     "  </block>\n" +
     "</xml>";
   this.xml = "";
+  this.code = "";
   this.lang = "freemarker";
- /* this.kind = "trigger";
-  this.state = "false";
-  this.period = 0;
-  this.delay = 0;*/
   this.config = new Config();
   this.setting = new Setting();
 }

@@ -104,6 +104,23 @@
       let that = this;
       let editor = this.$store.getters.getEditor;
       let graph = editor.graph;
+      // Returns a shorter label if the cell is collapsed and no
+      // label for expanded groups
+      let getLabel = graph.getLabel;
+      graph.getLabel = function(cell) {
+        let tmp = getLabel.apply(this, arguments); // "supercall"
+        if (this.isCellCollapsed(cell)) {
+          if (cell.getType() === "webspheremq")
+            tmp = `<h2>IBM MQ</h2>`;
+
+        } else if (this.isCellLocked(cell)) {
+          // Returns an empty label but makes sure an HTML
+          // element is created for the label (for event
+          // processing wrt the parent label)
+          return '';
+        }
+        return tmp;
+      };
       this.$nextTick(function() {
         that.addSidebarIcon(graph, that.sidebar, that.label, that.image, that.type);
       });

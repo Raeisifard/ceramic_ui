@@ -8,8 +8,8 @@ function Setting() {
   this.mode = "select";
   this.filePath = "";
   this.fileNameMask = "";
-  this.fileNameDoneExt = "";
-  this.fileNameLockExt = "";
+  this.fileNameDoneExt = "done";
+  this.fileNameLockExt = "$";
 }
 
 function JsonObject() {

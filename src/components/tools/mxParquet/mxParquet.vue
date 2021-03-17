@@ -3,9 +3,8 @@
 </template>
 
 <script>
-/*import VueBlockly from './blockly/VueBlockly.vue'*/
-import { EventBus } from '../../../event-bus.js';
 import JsonObject from "./data";
+
 mxCodecRegistry.addAlias(mxUtils.getFunctionName(JsonObject), 'JsonObject');
 export default {
   name: "mxParquet",
@@ -56,7 +55,7 @@ export default {
               'port;image=editors/images/overlays/information.png;spacingLeft=18', true);
           port.geometry.offset = new mxPoint(-16, 0);
           port.direction = "out";
-          v1.vueComponent = ctx.$store.getters.getVueComponentByObject(ctx, v1);
+          //v1.vueComponent = ctx.$store.getters.getVueComponentByObject(ctx, v1);
         } finally {
           model.endUpdate();
         }
@@ -102,26 +101,33 @@ export default {
     },
     openEditor: function(menu, cell, evt, cx) {
       cx.gid = cx.$store.getters.getGraphId;
+      if (cx.bc != null) {
+        cx.bc.close();
+        cx.bc = null;
+      }
+      cx.bc = new BroadcastChannel(cx.gid + ':parquet');
+      this.bc.onmessage = function(ev) {
+        if (ev.data.cmd && ev.data.gid === cx.gid) {
+          let gid = ev.data.gid;
+          let cid = ev.data.cid;
+          let graph = cx.$store.getters.getEditor.graph;
+          let cell = graph.model.getCell(cid);
+          switch (ev.data.cmd) {
+            case 'getCellData':
+              cx.bc.postMessage({ cmd: 'setCellData', xml: cell.getData().xml, gid: gid, cid: cid });
+              break;
+            case 'setCellCode':
+              cell.data.xml = ev.data.xml;
+              cell.data.code = ev.data.code;
+              break;
+            default:
+              break;
+          }
+        }
+      }
       let cid = cell.getId();
       let routeData = this.$router.resolve({ name: 'parquet', query: { gid: cx.gid, cid: cid } });
       window.open(routeData.href, '_blank');
-      /*let frame = document.createElement('iframe');
-      frame.setAttribute('width', '100%');
-      frame.setAttribute('height', '100%');
-      frame.setAttribute('src', '/#/parquet');
-      frame.style.backgroundColor = 'white';
-      this.iframe = frame;
-      let wnd = new mxWindow('Parquet Editor ver 1.0.0', frame, 0, 0, window.innerWidth, window.innerHeight, false, false);
-      wnd.setClosable(true);
-      wnd.setImage('/src/images/freemarker20.png');
-      wnd.setVisible(true);
-      frame.contentWindow.focus();
-      let elm = wnd.getElement();
-      elm.style.width = '100%';
-      elm.style.height = '100%';
-      elm.getElementsByTagName('table')[ 0 ].style.width = '100%';
-      elm.getElementsByTagName('table')[ 0 ].style.height = '100%';
-      this.cell = cell;*/
     }
   },
   mounted() {
@@ -139,25 +145,9 @@ export default {
     graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() === 'parquet') {
-
-        /*        menu.addItem('Config', 'editors/images/config.png', function() {
-                  that.openConfig(menu, cell, evt, that);
-                });
-                menu.addItem('Setting', 'editors/images/setting.png', function() {
-                  that.openSetting(menu, cell, evt, that);
-                });
-                menu.addSeparator();*/
         menu.addItem('Open Parquet Editor', 'editors/images/new-window.png', function() {
           that.openEditor(menu, cell, evt, that);
         });
-        /* let submenu1 = menu.addItem('Submenu 1', null, null);
-
-         menu.addItem('Subitem 1', null, function() {
-           alert('Subitem 1');
-         }, submenu1);
-         menu.addItem('Subitem 1', null, function() {
-           alert('Subitem 2');
-         }, submenu1);*/
       }
     };
 
@@ -165,43 +155,6 @@ export default {
       that.configureStylesheet(graph);
       that.addSidebarIcon(graph, that.sidebar, that, that.image, that.type);
     });
-    /*const _pattern = {
-      name: "vue_pattern",
-      components: {
-        VueBlockly
-      },
-      props: ['cell', 'store'],
-      template: '<vue-blockly :cell="cell" :store="store"></vue-blockly>',
-    };
-    this.$store.commit("ADD_VUE_OBJECT", _pattern);*/
-    this.bc = this.$store.getters.getBc;
-    this.bc.onmessage = function(ev) {
-      if (ev.data.cmd && ev.data.gid === that.gid) {
-        let gid = ev.data.gid;
-        let cid = ev.data.cid;
-        let cell = graph.model.getCell(cid);
-        switch (ev.data.cmd) {
-          case 'getCellData':
-            that.bc.postMessage({ cmd: 'setCellData', xml: cell.getData().xml, gid: gid, cid: cid });
-            break;
-          case 'setCellCode':
-            cell.data.xml = ev.data.xml;
-            cell.data.code = ev.data.code;
-            break;
-          default:
-            break;
-        }
-      }
-    }
-   /* window.onmessage = function(e) {
-      if (e.data.cmd && e.data.cmd === 'getCellData') {
-        that.iframe.contentWindow.postMessage({ cmd: 'setCellData', xml: that.cell.getData().xml }, '*');
-      } else if (e.data.cmd && e.data.cmd === 'setCellCode') {
-        that.cell.data.xml = e.data.xml;
-        that.cell.data.code = e.data.code;
-        EventBus.$emit(`${that.cell.getType()}.${that.cell.getId()}`, "SVG_REMAKE");
-      }
-    };*/
   },
   computed: {
     console: () => console,

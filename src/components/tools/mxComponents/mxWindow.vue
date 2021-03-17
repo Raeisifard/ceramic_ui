@@ -13,7 +13,6 @@
     </Dialog>
 </template>
 <script>
-  import dialogWebsite from '../mxWebsite/dialogWebsite.vue';
   import dialogProcess from '../mxProcess/dialogProcess.vue';
   import dialogSwitch from '../mxSwitch/dialogSwitch.vue';
   import dialogBuffer from '../mxBuffer/dialogBuffer.vue';
@@ -25,7 +24,6 @@
   export default {
     name: 'mxWindow',
     components: {
-      dialogWebsite,
       dialogProcess,
       dialogSwitch,
       dialogBuffer,

@@ -4,10 +4,7 @@
 
 <script>
 import EditorComponent from './components/EditorComponent.vue'
-import Blockly from 'blockly';
-import BlocklyJS from 'blockly/javascript';
 import './blocks/pattern';
-import { EventBus } from '../../../../event-bus.js';
 
 export default {
   name: 'BlocklyEditor',

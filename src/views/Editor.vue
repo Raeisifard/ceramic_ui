@@ -102,7 +102,6 @@
         // graph, such as the rubberband selection, but most parts
         // of the UI are custom in this example.
         let editor = new mxEditor();
-        //window.editor = editor;
         window.store = this.$store;
         editor.deploy = function(mxCell) {
           return false;
