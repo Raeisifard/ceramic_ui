@@ -51,7 +51,7 @@
     },
     computed: {
       version: function () {
-        return this.$store.getters.getVersion
+        return this.$store.getters.getConfig.about.version || this.$store.getters.getVersion
       }
     },
     mounted(){

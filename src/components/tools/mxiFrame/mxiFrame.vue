@@ -9,11 +9,10 @@
 import JsonObject from "./data";
 import Picker from 'vanilla-picker';
 import MxColorPicker from "@/components/tools/mxComponents/mxColorPicker";
-import Alignment from "@/components/tools/mxComponents/Alignment";
-mxCodecRegistry.addAlias(mxUtils.getFunctionName(JsonObject), 'JsonObject');
+import Alignment from "@/components/tools/mxComponents/Alignment";2
 
 export default {
-  name: 'mxInfo',
+  name: 'mxiFrame',
   components: { MxColorPicker, Alignment },
   props: {
     sidebar: {
@@ -25,7 +24,7 @@ export default {
       cell: null,
       showColorPicker: false,
       showAlignment: false,
-      type: "info",
+      type: "iframe",
       bc: null,
       gid: null,
       colorPicker: null,
@@ -118,9 +117,9 @@ export default {
 
         model.beginUpdate();
         try {
-          let width = 120, height = 120, xOffset = -8, yOffset = 9, portWidth = 16, portHeight = 16,
+          let xOffset = -8, yOffset = 9, portWidth = 16, portHeight = 16,
               alternateWidth = 120, alternateHeight = 40;
-          v1 = graph.insertVertex(parent, null, new JO().config.info, x, y, width, height, type + ';fillColor=rgb(24,255,150,0.65)');
+          v1 = graph.insertVertex(parent, null, new JO().config.label, x, y, 300, 200, type + ';fillColor=rgb(24,255,150,0.65)');
           v1.setConnectable(false);
           v1.setType(type);
           v1.setData(new JsonObject());
@@ -185,7 +184,7 @@ export default {
       style[ mxConstants.STYLE_ALIGN ] = mxConstants.ALIGN_CENTER;
       // style[ mxConstants.STYLE_ALIGN ] = mxConstants.ALIGN_RIGHT;
 
-      graph.getStylesheet().putCellStyle('info', style);
+      graph.getStylesheet().putCellStyle('iframe', style);
     }
   },
   mounted() {
@@ -197,7 +196,7 @@ export default {
     let defaultMenu = graph.popupMenuHandler.factoryMethod;
     graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
-      if (cell != null && cell.getType() === 'info') {
+      if (cell != null && cell.getType() === 'iframe') {
         menu.addItem('Open TinyMCE Editor', 'editors/images/new-window.png', function() {
           that.openEditor(menu, cell, evt, that);
         });
@@ -236,8 +235,21 @@ export default {
     });
     this.$nextTick(function() {
       that.configureStylesheet(graph);
-      that.addSidebarIcon(graph, that.sidebar, JsonObject, "/src/images/icons48/info.png", that.type);
+      that.addSidebarIcon(graph, that.sidebar, JsonObject, "/src/images/icons48/iframe.png", that.type);
     })
+
+    graph.addListener(mxEvent.CELLS_RESIZED, function(sender, evt)
+    {
+      let cells = evt.getProperty('cells');
+      cells.forEach(cell =>{
+        if (cell.getType() === 'iframe') {
+          let geo = cell.getGeometry();
+          let iframe = graph.view.getState(cell).text.node.getElementsByTagName("iframe")[0];
+          iframe.width = geo.width;
+          iframe.height = geo.height - 5;
+        }
+      });
+    });
   },
   computed: {
     console: () => console,

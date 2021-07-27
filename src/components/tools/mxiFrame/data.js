@@ -1,10 +1,7 @@
-const type = "INFO";
+const type = "IFRAME";
 
 function Config() {
-  this.info = '<h1 style="margin:0;">Info & Doc</h1>' +
-    '<img src="/src/images/icons48/info.png" width="48" height="48">' +
-    '<br>' +
-    '<a href="http://www.jgraph.com" target="_blank">Edit</a>';
+  this.label = '<iframe srcdoc="<p>Hello world!</p>" src="demo_iframe_srcdoc.htm" width="300" height="195" style="border:1px solid black;background-color: coral;"></iframe>';
   this.fillColor = 'rgb(24,255,150,0.65)';
   this.style = {};
   this.style['STYLE_VERTICAL_ALIGN'] = 'ALIGN_TOP';

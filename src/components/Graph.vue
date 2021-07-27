@@ -445,6 +445,15 @@ export default {
             eb.close();
           }
         }, connection);
+        let throughputItem = menu.addItem('Throughput', 'editors/images/throughput.png', function() {
+          editor.execute("computeThroughput");
+        });
+        throughputItem.lastChild.innerHTML = "<img src=\"editors/images/pixle.png\">";
+        if (that.$store.getters.isThroughputEnable) {
+          throughputItem.lastChild.lastChild.classList.add("throughput_on");
+        }else{
+          throughputItem.lastChild.lastChild.classList.add("throughput_off");
+        }
         menu.addSeparator();
         menu.addItem('Show', 'src/images/camera.png', function() {
           editor.execute("show");
@@ -468,7 +477,6 @@ export default {
     // Adds all required styles to the graph (see below)
     this.configureStylesheet(graph);
     //mxCodecRegistry.getCodec(mxCell).exclude.push('VueComponent');
-
 
     this.$store.dispatch("createNewGraph", "DefaultGraph");
     /* mxEditor.prototype.getGraph = function(graphId) {
@@ -499,6 +507,12 @@ export default {
         that.$store.commit("SET_GRAPH_NAME", graph_name);
         //that.$store.dispatch("setGraphStatus", active ? 'deployed' : 'undeployed');
         decoder.decode(node, editor.graph.getModel());
+        //editor.graph.fit();
+        //editor.graph.zoomOut();
+        editor.graph.zoomActual();
+        //editor.graph.zoomOut();
+        editor.graph.fit();
+        editor.graph.zoomOut();
         let cell0 = editor.graph.getModel().getCell(0);
         let version = cell0.version;
         that.$store.commit("SET_VERSION", version);
@@ -568,10 +582,23 @@ export default {
   position: absolute;
   overflow: hidden;
   top: 36px;
-  left: 60px;
+  left: 0px;
   bottom: 36px;
   right: 0;
   background-image: url('/editors/images/grid.gif');
   cursor: default;
+}
+</style>
+<style>
+.throughput_on {
+  left: 0px;
+  width: 15px;
+  background: url('/editors/images/onoff.png') 0 -1px;
+}
+
+.throughput_off {
+  left: 0px;
+  width: 15px;
+  background: url('/editors/images/onoff.png') -45px -1px;
 }
 </style>

@@ -65,3 +65,35 @@ mxObjectCodec.prototype.decodeNode = function(dec, node, obj) {
     mxObjectCodecOld.apply(this, [dec, node, obj]);
   }
 };
+
+mxText.prototype.apply = function(state)
+{
+  var old = this.spacing;
+  mxShape.prototype.apply.apply(this, arguments);
+
+  if (this.style != null)
+  {
+    this.fontStyle = mxUtils.getValue(this.style, mxConstants.STYLE_FONTSTYLE, this.fontStyle);
+    this.family = mxUtils.getValue(this.style, mxConstants.STYLE_FONTFAMILY, this.family);
+    this.size = mxUtils.getValue(this.style, mxConstants.STYLE_FONTSIZE, this.size);
+    this.color = mxUtils.getValue(this.style, mxConstants.STYLE_FONTCOLOR, this.color);
+    this.align = mxUtils.getValue(this.style, mxConstants.STYLE_ALIGN, this.align);
+    this.valign = mxUtils.getValue(this.style, mxConstants.STYLE_VERTICAL_ALIGN, this.valign);
+    this.poslabel = mxUtils.getValue(this.style, mxConstants.STYLE_LABEL_POSITION, this.poslabel || this.align);
+    this.vposlabel = mxUtils.getValue(this.style, mxConstants.STYLE_VERTICAL_LABEL_POSITION, this.vposlabel || this.valign);
+    this.spacing = parseInt(mxUtils.getValue(this.style, mxConstants.STYLE_SPACING, this.spacing));
+    this.spacingTop = parseInt(mxUtils.getValue(this.style, mxConstants.STYLE_SPACING_TOP, this.spacingTop - old)) + this.spacing;
+    this.spacingRight = parseInt(mxUtils.getValue(this.style, mxConstants.STYLE_SPACING_RIGHT, this.spacingRight - old)) + this.spacing;
+    this.spacingBottom = parseInt(mxUtils.getValue(this.style, mxConstants.STYLE_SPACING_BOTTOM, this.spacingBottom - old)) + this.spacing;
+    this.spacingLeft = parseInt(mxUtils.getValue(this.style, mxConstants.STYLE_SPACING_LEFT, this.spacingLeft - old)) + this.spacing;
+    this.horizontal = mxUtils.getValue(this.style, mxConstants.STYLE_HORIZONTAL, this.horizontal);
+    this.background = mxUtils.getValue(this.style, mxConstants.STYLE_LABEL_BACKGROUNDCOLOR, this.background);
+    this.border = mxUtils.getValue(this.style, mxConstants.STYLE_LABEL_BORDERCOLOR, this.border);
+    this.textDirection = mxUtils.getValue(this.style, mxConstants.STYLE_TEXT_DIRECTION, mxConstants.DEFAULT_TEXT_DIRECTION);
+    this.opacity = mxUtils.getValue(this.style, mxConstants.STYLE_TEXT_OPACITY, 100);
+    this.updateMargin();
+  }
+
+  this.flipV = null;
+  this.flipH = null;
+};

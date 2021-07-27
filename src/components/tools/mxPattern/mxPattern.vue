@@ -101,7 +101,7 @@
         let frame = document.createElement('iframe');
         frame.setAttribute('width', '100%');
         frame.setAttribute('height', '100%');
-        frame.setAttribute('src', '/#/pattern');
+        frame.setAttribute('src', '/pattern');
         frame.style.backgroundColor = 'white';
         this.iframe = frame;
         let wnd = new mxWindow('Pattern Editor ver 1.0.0', frame, 0, 0, window.innerWidth, window.innerHeight, false, false);

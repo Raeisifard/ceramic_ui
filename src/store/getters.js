@@ -38,6 +38,12 @@ export default {
   getCell: state => {
     return state.cell;
   },
+  getConfig: state => {
+    return state.config;
+  },
+  getEditor_Config: state => {
+    return state.editor_config;
+  },
   getDialog: state => {
     return state.dialog;
   },
@@ -133,5 +139,8 @@ export default {
     });
     instance.$mount(); // pass nothing
     return instance;
-  }
+  },
+  isThroughputEnable: state => {
+    return state.throughputEnable;
+  },
 }

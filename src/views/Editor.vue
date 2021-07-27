@@ -39,11 +39,11 @@
         </Layout>-->
         <splash v-if="isSplash"></splash>
 
-        <toolbar></toolbar>
-
-        <sidebar></sidebar>
+      <toolbar></toolbar>
 
         <graph></graph>
+
+      <sidebar></sidebar>
 
         <status></status>
 

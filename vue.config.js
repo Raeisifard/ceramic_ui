@@ -8,6 +8,9 @@ module.exports = {
     ? '/'
     : '/',
   configureWebpack: {
+    devServer: {
+      proxy: 'http://localhost:8090/'
+    },
     optimization: {
       minimize: false
     },

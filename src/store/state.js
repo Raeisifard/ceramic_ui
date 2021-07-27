@@ -1,8 +1,10 @@
 export default {
   cmd: null,
   /* title: nll,*/
-  version: "1.0.0",
+  version: "1.1.1",
   cell: null,
+  config: {about: {}},
+  editor_config: {},
   dialog: null,
   splash: true,
   editor: {},
@@ -18,5 +20,6 @@ export default {
   graphProfile: {},
   jsonGraph: null,
   vueComponents: {},
-  vueObject: {}
+  vueObject: {},
+  throughputEnable: false
 }

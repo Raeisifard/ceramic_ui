@@ -1,9 +1,9 @@
 <template>
     <div class="dialog-toolbar">
         <LinkButton iconCls="icon-save" :plain="true" @click='$emit("save", `{"lang": "${value}", "theme": "${theme}", "fName": "${fileName}" }`)'>Save</LinkButton>
-        <div style="margin-left:10px;display:inline-block;" class="lang">
+<!--        <div style="margin-left:10px;display:inline-block;" class="lang">
             <ComboBox inputId="c1" v-model="value" :data="data" limitToList></ComboBox>
-        </div>
+        </div>-->
         <!--<input type="text" size="25" v-model="fileName" placeholder="File Name" />-->
         <div style="margin-left:10px;display:inline-block;margin-right:1em">
             <TextBox inputId="t1" v-model="fileName" iconCls="icon-file" placeholder="File name"></TextBox>

@@ -15,12 +15,20 @@ import 'vx-easyui/dist/themes/vue.css';
 import EasyUI from 'vx-easyui';
 import { EventBus } from './event-bus.js';
 //import switchButtons from './components/tools/mxSwitch/switchButtons.vue';
+if (window.fetch) {
+  fetch('./config.json')
+    .then(response => response.json())
+    .then(obj => store.dispatch("setConfig", obj));
+} else {
+  console.log("Your browser doesn't support \"fetch\"! Try using \"XMLHttpRequest\"...");
+  store.dispatch("setConfig", null);
+}
 
 Vue.use(EasyUI);//, switchButtons);
 //Vue.use(router);
 Vue.config.productionTip = false;
 //Add unimported components to ignore list to prevent warnings.
-Vue.config.ignoredElements = ['field','block','category','xml','mutation','value','sep'];
+Vue.config.ignoredElements = ['field', 'block', 'category', 'xml', 'mutation', 'value', 'sep'];
 Vue.prototype.$log = console.log.bind(console);
 
 const vue = new Vue({
@@ -28,6 +36,7 @@ const vue = new Vue({
   store,
   render: h => h(App)
 }).$mount('#app');
+
 //vue.$store.commit("SET_VERSION", "1.0.0");
 //Global preparation ...
 /*Defining parseFunction method on String objects*/

@@ -23,6 +23,21 @@ export default {
   setCell: (context, cell) => {
     context.commit("SET_CELL", cell);
   },
+  setConfig: (context, config) => {
+    if (config == null) {
+      mxUtils.get('./config.json', function(req) {
+        let config = JSON.parse(req.request.responseText);
+        context.commit("SET_CONFIG", config);
+        context.commit("SET_EDITOR_CONFIG", config.editor);
+      });
+    } else {
+      context.commit("SET_CONFIG", config);
+      context.commit("SET_EDITOR_CONFIG", config.editor);
+    }
+  },
+  setEditorConfig: (context, config) => {
+    context.commit("SET_EDITOR_CONFIG", config);
+  },
   setDialog: (context, dialog) => {
     dialog.close();
     context.commit("SET_DIALOG", dialog);
@@ -70,6 +85,7 @@ export default {
       }
     });
   },
+
   setConnected: (context, connected) => {
     context.commit("SET_CONNECTED", connected);
   },
@@ -165,7 +181,7 @@ export default {
   },
   sendSetting2VX: (context, cell) => {
     let status = context.getters.getGraphStatus;
-    if (status === 'undeployed'){
+    if (status === 'undeployed') {
       return -1;//The Graph must already deployed!
     }
     let eb = context.getters.getEb;
@@ -231,5 +247,8 @@ export default {
       model.getCell(0).name = name;
     context.dispatch("setGraphName", model.getCell(0).name);
     return oldModel;
-  }
+  },
+  setThroughputEnable: (context, enable) => {
+    context.commit("SET_THROUGHPUT_ENABLE", enable);
+  },
 }

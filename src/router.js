@@ -73,6 +73,16 @@ export default new Router({
       }
     },
     {
+      path: '/align',
+      name: 'align',
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: function() {
+        return import(/* webpackChunkName: "about" */ './views/Align.vue')
+      }
+    },
+    {
       path: '/parquet',
       name: 'parquet',
       meta: {title: 'Parquet 1.0.0'},

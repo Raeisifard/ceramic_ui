@@ -17,6 +17,12 @@ export default {
   SET_CELL: (state, cell) => {
     state.cell = cell;
   },
+  SET_CONFIG: (state, config) => {
+    state.config = {...state.config, ...config};
+  },
+  SET_EDITOR_CONFIG: (state, config) => {
+    state.editor_config = { ...state.editor_config, ...config };
+  },
   SET_DIALOG: (state, dialog) => {
     state.dialog = dialog;
   },
@@ -61,5 +67,8 @@ export default {
   },
   ADD_VUE_OBJECT: (state, vueObject) => {
     state.vueObject[vueObject.name] = vueObject;
+  },
+  SET_THROUGHPUT_ENABLE: (state, enable) => {
+    state.throughputEnable = enable;
   }
 }
