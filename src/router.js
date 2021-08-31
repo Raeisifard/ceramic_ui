@@ -5,7 +5,7 @@ import Editor from './views/Editor.vue'
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history',
+  mode: process.env.IS_ELECTRON ? 'hash' : 'history',
   routes: [
     {
       path: '/',
@@ -94,6 +94,10 @@ export default new Router({
         next();
       }
     },
+    {
+      path: '*',
+      redirect: '/'
+    }
     /*{
       path: '/tinymce',
       name: 'tinymce',

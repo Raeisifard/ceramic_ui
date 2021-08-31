@@ -71,7 +71,7 @@ Blockly.Blocks[ 'pattern_freemarker_linefeed' ] = {
 Blockly.JavaScript[ 'pattern_freemarker_linefeed' ] = function(block) {
   const value_name = Blockly.JavaScript.valueToCode(block, 'NAME', Blockly.JavaScript.ORDER_NONE);
   // TODO: Assemble JavaScript into code variable.
-  const code = `${value_name}\n`;
+  const code = `${value_name}^`;
   return code;
 };
 
@@ -177,7 +177,7 @@ Blockly.Blocks[ 'pattern_freemarker_enter' ] = {
 
 Blockly.JavaScript[ 'pattern_freemarker_enter' ] = function(block) {
   const value_name = Blockly.JavaScript.valueToCode(block, 'NAME', Blockly.JavaScript.ORDER_NONE);
-  return [`${value_name}\n`, Blockly.JavaScript.ORDER_NONE];
+  return [`${value_name}^`, Blockly.JavaScript.ORDER_NONE];
 };
 
 Blockly.Blocks[ 'xml_element' ] = {

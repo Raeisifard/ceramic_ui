@@ -83,7 +83,8 @@ export default {
               let throughput = [];
               let graph = this.editor.graph;
               let model = graph.getModel();
-              let edges = model.getChildEdges(model.root.getChildAt(0));
+              //let edges = model.getChildEdges(model.root.getChildAt(0));
+              let edges = graph.getAllEdges([model.root.getChildAt(0)]);
               let edgesMap = new Map();
               edges.forEach(edge => {
                 if (edge.edge) {
@@ -130,7 +131,8 @@ export default {
     setAllEdges2DefaultStyle: function() {
       let graph = this.editor.graph;
       let model = graph.getModel();
-      let edges = model.getChildEdges(model.root.getChildAt(0));
+      //let edges = model.getChildEdges(model.root.getChildAt(0));
+      let edges = graph.getAllEdges([model.root.getChildAt(0)]);
       edges.forEach(edge => {
         if (edge.edge) {
           const state = graph.view.getState(edge);
