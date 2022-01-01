@@ -6,6 +6,16 @@ let myHandler = function(error, message) {
   EventBus.$emit(`${message.headers.address}`, message);
   mxLog.debug('received a message: ' + JSON.stringify(message));
 };
+
+let chunkSubstr = function(str, size) {
+  const numChunks = Math.ceil(str.length / size)
+  const chunks = new Array(numChunks)
+  for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
+    chunks[i] = str.substr(o, size)
+  }
+  return chunks
+};
+
 export default {
   checkVersion: (context, version) => {
     //TODO check version number with state-version and return true if the version is compatible.
@@ -66,6 +76,22 @@ export default {
               console.dir(error);
             } else {
               let headers = message.headers;
+              if (headers.cmd && headers.cmd === 'status'){
+                switch (message.body){
+                  case "DEPLOYED":
+                    context.dispatch("setGraphStatus", headers.active ? 'deployed' : 'undeployed');
+                    let editor = context.state.editor;
+                    editor.setGraph(mxUtils.getXml(new mxCodec(mxUtils.createXmlDocument()).encode(editor.graph.getModel())),
+                      headers.graph_id, headers.graph_name, headers.active);
+                    break;
+                  case "DEPLOY FAILED":
+                    context.dispatch("setGraphStatus", headers.active ? 'deployed' : 'undeployed');
+                    break;
+                  case "UNDEPLOYED":
+                    context.dispatch("setGraphStatus", 'undeployed');
+                    break;
+                }
+              }
               let unit = headers.unit;//.e.g process.7 switch.2 ...
               //EventBus.$emit(unit, message);
             }
@@ -251,4 +277,26 @@ export default {
   setThroughputEnable: (context, enable) => {
     context.commit("SET_THROUGHPUT_ENABLE", enable);
   },
+  graph2vx: (context, {editor, cmd}) => {
+    let enc = new mxCodec(mxUtils.createXmlDocument());
+    let model = editor.graph.getModel();
+    let node = enc.encode(model);
+    this.eb = context.getters.getEb;
+    //let headers = { cmd: "deploy", name: model.getCell(0).name, uid: model.getCell(0).uid};
+    let headers = { cmd: cmd, name: context.getters.getGraphName, uid: context.getters.getGraphId };
+    let graphXml = mxUtils.getXml(node);
+    let chunk = chunkSubstr(graphXml, 200000);
+    this.eb.send('mx.vx', "ask permission to send graph", headers, (err, res) => {
+      if (err == null) {
+        //res.reply
+        editor.setGraph(res.body, res.headers.graph_id, res.headers.graph_name, res.headers.active);
+        store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
+        //store.dispatch("setGraphStatus", "deployed");
+      } else {
+        mxLog.warn("There is some error in deploying graph!");
+        console.dir(err);
+      }
+    });
+  }
+
 }

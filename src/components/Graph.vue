@@ -451,7 +451,7 @@ export default {
         throughputItem.lastChild.innerHTML = "<img src=\"editors/images/pixle.png\">";
         if (that.$store.getters.isThroughputEnable) {
           throughputItem.lastChild.lastChild.classList.add("throughput_on");
-        }else{
+        } else {
           throughputItem.lastChild.lastChild.classList.add("throughput_off");
         }
         menu.addSeparator();
@@ -461,7 +461,7 @@ export default {
         menu.addItem('Print', 'src/images/printer.png', function() {
           editor.execute("print");
         });
-      }else if (cell.getType() === 'group') {
+      } else if (cell.getType() === 'group') {
         menu.addItem('Background Color', 'editors/images/color.png', function() {
           that.cell = cell;
           that.show = true;
@@ -511,8 +511,15 @@ export default {
         //editor.graph.zoomOut();
         editor.graph.zoomActual();
         //editor.graph.zoomOut();
+        graph.view.rendering = false;
         editor.graph.fit();
         editor.graph.zoomOut();
+        if (editor.graph.getView().getScale() > 1){
+          editor.graph.zoomActual();
+        }
+        //editor.graph.center();
+        graph.view.rendering = true;
+        graph.refresh();
         let cell0 = editor.graph.getModel().getCell(0);
         let version = cell0.version;
         that.$store.commit("SET_VERSION", version);

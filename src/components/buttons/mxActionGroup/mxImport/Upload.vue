@@ -15,11 +15,11 @@
                         Uploading {{ fileCount }} files...
                     </p>
                     <!--SUCCESS-->
-                    <div v-if="isSuccess">
+                    <div v-if="isSuccess" style="padding-left: 15px;">
                         <h2>Uploaded {{ uploadedFiles.length }} file(s) successfully.</h2>
                     </div>
                     <!--FAILED-->
-                    <div v-if="isFailed">
+                    <div v-if="isFailed" style="padding-left: 15px;">
                         <h2>Uploaded failed.</h2>
                         <p>
                             <a href="javascript:void(0)" @click="reset()">Try again</a>
