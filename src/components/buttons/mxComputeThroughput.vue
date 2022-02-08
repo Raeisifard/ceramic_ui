@@ -160,7 +160,7 @@ export default {
         });
     };
     this.editor.addAction('computeThroughput', function(editor, checks) {
-      if (that.$store.getters.isThroughputEnable) {
+      if (that.$store.getters.isThroughputEnable || that.$store.getters.getGraphStatus !== "deployed") {
         that.$store.commit("SET_THROUGHPUT_ENABLE", false);
       } else {
         that.$store.commit("SET_THROUGHPUT_ENABLE", true);

@@ -198,10 +198,10 @@ export default {
     graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() === 'info') {
-        menu.addItem('Open TinyMCE Editor', 'editors/images/new-window.png', function() {
+        menu.addItem('Open Editor', 'editors/images/new-window.png', function() {
           that.openEditor(menu, cell, evt, that);
         });
-        menu.addItem('Background Color', 'editors/images/color.png', function() {
+        menu.addItem('Color', 'editors/images/color.png', function() {
           that.cell = cell;
           that.showColorPicker = true;
           //that.picker = true;

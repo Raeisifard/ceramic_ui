@@ -76,16 +76,16 @@ export default {
               console.dir(error);
             } else {
               let headers = message.headers;
-              if (headers.cmd && headers.cmd === 'status'){
+              if (headers.cmd && headers.cmd === 'status' && headers["graph_id"].toLowerCase() ===  context.getters.getGraphId){
                 switch (message.body){
                   case "DEPLOYED":
-                    context.dispatch("setGraphStatus", headers.active ? 'deployed' : 'undeployed');
                     let editor = context.state.editor;
                     editor.setGraph(mxUtils.getXml(new mxCodec(mxUtils.createXmlDocument()).encode(editor.graph.getModel())),
                       headers.graph_id, headers.graph_name, headers.active);
                     break;
+                  //case "REDEPLOYED": Consists of one "Undeploy" followed by an explicit "Deploy".
                   case "DEPLOY FAILED":
-                    context.dispatch("setGraphStatus", headers.active ? 'deployed' : 'undeployed');
+                    context.dispatch("setGraphStatus", headers.active === 'true' ? 'deployed' : 'undeployed');
                     break;
                   case "UNDEPLOYED":
                     context.dispatch("setGraphStatus", 'undeployed');
@@ -168,6 +168,8 @@ export default {
       } finally {
         eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);// set a handler to receive graph messages
       }*/
+    }else{
+      eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
     }
   },
   setGraphState: (context, graphState) => {

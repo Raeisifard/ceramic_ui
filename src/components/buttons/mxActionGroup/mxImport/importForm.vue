@@ -45,8 +45,10 @@
           let name = model.getCell(0).name;
           let context = that.store;
           context.dispatch("setGraphId", uid);
+          context.dispatch("setGraphStatus", null);
           context.dispatch("setVersion", version);
           context.dispatch("setGraphName", name);
+          context.dispatch("setThroughputEnable", false);
         }
         that.$emit('wndClose');
       })

@@ -107,13 +107,20 @@
         this.testStatus = "unknown";
         let config = {};
         config = {};
-        config.ip = this.ip || "172.0.0.1";
-        config.port = this.port || 1433;
-        config.dbName = this.dbName;
-        config.user = this.user;
-        config.pass = this.pass;
-        config.buffer = this.buffer;
-        config.instance = this.instance;
+        config.ip = this.ip.trim();
+        let editor = this.$store.getters.getEditor;
+        debugger;
+        let graph = editor.graph;
+        let model = graph.getModel();
+        if (model.getRoot().getData() && model.getRoot().getData().trim().length > 1) {
+          let dataSources = JSON.parse(model.getRoot().getData());
+          if (config.ip.trim().startsWith('#') && dataSources[ config.ip.trim().substring(1) ])
+            config = { ...config, ...dataSources[ config.ip.trim().substring(1) ] }
+        }
+        config.port = this.port || config.port;
+        config.dbName = this.dbName || config.dbName;
+        config.user = this.user || config.user;
+        config.pass = this.pass || config.pass;
         this.eb = this.$store.getters.getEb;
         let headers = {
           "cmd": "TEST-CONNECTION",

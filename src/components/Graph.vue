@@ -407,6 +407,59 @@ export default {
       // Disables any default behaviour for the double click
       mxEvent.consume(evt);
     };
+    // Installs a custom tooltip for cells
+    let defaultGetTooltipForCell = mxUtils.bind(graph, graph.getTooltipForCell);
+    graph.getTooltipForCell = function(cell) {
+      let dataSources = JSON.parse(graph.getModel().getRoot().getData());
+      let config = cell.getData() ? cell.getData().config : {};
+      if (cell.getType() === "process")
+        return `#${cell.getId()}
+        ${cell.getData().fName}`;
+      else if (cell.getType() === "webspheremq") {
+        if (config.ip && config.ip.trim().startsWith('#')) {
+          let datSrc = dataSources[ config.ip.trim().substring(1) ];
+          let ip = "";
+          if (datSrc) {
+            return `#${cell.getId()}
+              ${config.ip.trim()}
+              ${config.qm || datSrc.qm}
+              ${config.qName || datSrc.qName}`;
+          } else {
+            return `#${cell.getId()}
+              ?${config.ip.trim().substring(1)}
+              ${config.qm}
+              ${config.qName}`;
+          }
+        } else {
+          return `#${cell.getId()}
+        ${config.qm}
+        ${config.qName}`;
+        }
+      } else if (cell.getType() === "database") {
+        if (config.ip && config.ip.trim().startsWith('#')) {
+          let datSrc = dataSources[ config.ip.trim().substring(1) ];
+          let ip = "";
+          if (datSrc) {
+            return `#${cell.getId()}
+              ${config.ip.trim()}
+              ${config.dbName || datSrc.dbName}`;
+          } else {
+            return `#${cell.getId()}
+              ?${config.ip.trim().substring(1)}
+              ${config.dbName}`;
+          }
+        } else {
+          return `#${cell.getId()}
+        ${config.dbName}`;
+        }
+      } else if (cell.getType() === "switch" && cell.getData().config.kind === "trigger")
+        return `#${cell.getId()}
+        ${cell.getData().setting._.period}-${cell.getData().setting._.delay}`;
+      else if (cell.getType() === "info")
+        return defaultGetTooltipForCell(cell);
+      else
+        return `#${cell.getId()}`;
+    }
     // Configures automatic expand on mouseover
     graph.popupMenuHandler.autoExpand = true;
 
@@ -415,6 +468,18 @@ export default {
     graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
       if (cell == null) {
+        let dataSource = menu.addItem('Data Source', 'editors/images/data-source.png', null);
+        menu.addItem('New Data Source', 'editors/images/new.png', function() {
+          editor.execute("dataSourceName");
+        }, dataSource);
+        let root = editor.graph.getModel().root;
+        let data = JSON.parse(root.data) || {};
+        for (const name in data) {
+          menu.addItem(name, 'editors/images/data-source.png', function() {
+            editor.execute("dataSourceName", name);
+          }, dataSource);
+        }
+
         menu.addItem('Console', 'editors/images/console.gif', function() {
           editor.execute("toggleConsole");
         });
@@ -423,15 +488,14 @@ export default {
           editor.execute("toggleOutline");
         });
         menu.addSeparator();
-        menu.addItem('Sync up', 'src/images/syncup.png', function() {
-          alert('Item 1');
-        });
 
+        /*menu.addItem('Sync up', 'src/images/syncup.png', function() {
+          alert('Item 1');
+        }, null, "", false);
         menu.addItem('Sync down', 'src/images/syncdown.png', function() {
           alert('Item 2');
-        });
-
-        menu.addSeparator();
+        }, null, "", false);
+        menu.addSeparator();*/
 
         let connection = menu.addItem('Connection', 'src/images/connection.png', null);
 
@@ -504,8 +568,8 @@ export default {
         let decoder = new mxCodec(xmlDocument);
         let node = xmlDocument.documentElement;
         that.$store.dispatch("setGraphId", graph_id);
-        that.$store.commit("SET_GRAPH_NAME", graph_name);
-        //that.$store.dispatch("setGraphStatus", active ? 'deployed' : 'undeployed');
+        that.$store.commit("SET_GRAPH_NAME", graph_name);//Direct commit and Not dispatch it.
+        that.$store.dispatch("setGraphStatus", active === 'true' ? 'deployed' : 'undeployed');
         decoder.decode(node, editor.graph.getModel());
         //editor.graph.fit();
         //editor.graph.zoomOut();
@@ -514,7 +578,7 @@ export default {
         graph.view.rendering = false;
         editor.graph.fit();
         editor.graph.zoomOut();
-        if (editor.graph.getView().getScale() > 1){
+        if (editor.graph.getView().getScale() > 1) {
           editor.graph.zoomActual();
         }
         //editor.graph.center();

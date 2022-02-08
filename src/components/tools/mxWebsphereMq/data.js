@@ -1,16 +1,16 @@
 const type  = "WEBSPHEREMQ";
 
 function Config() {
-  this.mode = "reading";
-  this.ip = "172.0.0.1";
-  this.port = 1414;
-  this.qm = "my.Queue.Manager";
-  this.qName = "TestQueue";
-  this.user = "";
-  this.pass = "";
-  this.channelName = "SYSTEM.DEF.SVRCONN";
-  this.instance = 1;
-  this.readAhead = false;
+  this.mode = null;
+  this.ip = null;
+  this.port = null;
+  this.qm = null;
+  this.qName = null;
+  this.user = null;
+  this.pass = null;
+  this.channelName = null;
+  this.instance = null;
+  this.readAhead = null;
 }
 
 function Setting() {this.count= 1;}

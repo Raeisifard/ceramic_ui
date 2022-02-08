@@ -23,6 +23,7 @@
     <mx-print-button></mx-print-button>
     <mx-space></mx-space>
     <mx-compute-throughput v-show="false"></mx-compute-throughput>
+    <mx-data-source v-show="false"></mx-data-source>
     <mx-console-button></mx-console-button>
     <mx-outline-button></mx-outline-button>
     <!--
@@ -52,10 +53,12 @@ import mxActionStatus from "./buttons/mxActionGroup/mxActionStatus.vue";
 import mxBring2Front from "@/components/buttons/mxBring2Front";
 import MxSend2Back from "@/components/buttons/mxSend2Back";
 import MxComputeThroughput from "./buttons/mxComputeThroughput";
+import MxDataSource from "./buttons/mxDataSource/mxDataSource"
 
 export default {
   name: 'Toolbar',
   components: {
+    MxDataSource,
     MxComputeThroughput,
     MxSend2Back,
     mxActionStatus,

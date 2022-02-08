@@ -5,7 +5,7 @@
 </template>
 
 <script>
-  import config from './dialogConfig.vue';
+  import config from './dialogConfig01.vue';
   import setting from './dialogSetting.vue';
   export default {
     name: "dialogWebspheremq",

@@ -133,9 +133,9 @@
           menu.addItem('Config', 'editors/images/config.png', function() {
             that.openConfig(menu, cell, evt, that);
           });
-          menu.addItem('Setting', 'editors/images/setting.png', function() {
+          /*menu.addItem('Setting', 'editors/images/setting.png', function() {
             that.openSetting(menu, cell, evt, that);
-          });
+          });*/
         }
       };
       const oldDeploy = editor.deploy;

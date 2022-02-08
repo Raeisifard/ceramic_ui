@@ -45,7 +45,7 @@ export default {
     state.components.push(component);
   },
   SET_GRAPH_ID: (state, graphId) => {
-    state.graphId = graphId;
+    state.graphId = graphId.toLowerCase();
   },
   SET_GRAPH_NAME: (state, graphName) => {
     state.graphName = graphName;

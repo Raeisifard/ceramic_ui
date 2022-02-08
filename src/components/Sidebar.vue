@@ -3,15 +3,15 @@
   <div id="sidebarContainer" :class="{no_side_bar: true, side_bar: isSideBar}">
     <mx-process :sidebar="sidebar"></mx-process>
     <mx-switch :sidebar="sidebar"></mx-switch>
-    <mx-chart :sidebar="sidebar"></mx-chart>
+<!--    <mx-chart :sidebar="sidebar"></mx-chart>-->
     <mx-file :sidebar="sidebar"></mx-file>
     <mx-database :sidebar="sidebar"></mx-database>
     <mx-websphere-mq :sidebar="sidebar"></mx-websphere-mq>
     <mx-parquet :sidebar="sidebar"></mx-parquet>
-    <mx-buffer :sidebar="sidebar"></mx-buffer>
+<!--    <mx-buffer :sidebar="sidebar"></mx-buffer>-->
     <mx-info :sidebar="sidebar"></mx-info>
-    <mx-pattern :sidebar="sidebar"></mx-pattern>
-    <mxi-frame :sidebar="sidebar"></mxi-frame>
+<!--    <mx-pattern :sidebar="sidebar"></mx-pattern>
+    <mxi-frame :sidebar="sidebar"></mxi-frame>-->
   </div>
 </template>
 

@@ -1,7 +1,7 @@
 <template>
     <div>
         <Tabs>
-            <TabPanel :title="'Select files'">
+<!--            <TabPanel :title="'Select files'">
                 <Panel style="min-width:400px; min-height: 224.4px;">
                     <div slot="header">
                         <ButtonGroup>
@@ -28,7 +28,7 @@
                         </template>
                     </DataList>
                 </Panel>
-            </TabPanel>
+            </TabPanel>-->
             <TabPanel :title="'Watch Folder'">
                 <div style="height: 100%; margin: 29.5px 0;" class="f-full">
                     <div style="display: flex;flex-direction: row;justify-content: space-around;margin: 10px 0;">

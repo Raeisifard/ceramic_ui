@@ -6,8 +6,8 @@
                  image="/src/images/deploy.png"></mx-button>-->
         <button class="x-button x-button-drop" @click="open = addOpenClass()">&#9660;</button>
       <button class="status-button" :class="getConnectionState" type="button" disabled>
-        <img v-if="image" :src="image"/>
-        {{ action }}
+        {{ getStatus }}
+        <img style="" v-if="image" :src="image"/>
       </button>
 
       <ul class="x-button-drop-menu" @click="open = false">
@@ -23,7 +23,7 @@
         <li>
           <a @click.prevent="redeploy">Redeploy</a>
         </li>
-          <mx-open-xml-graph :max=1></mx-open-xml-graph>
+<!--          <mx-open-xml-graph :max=1></mx-open-xml-graph>-->
           <mx-import-button></mx-import-button>
           <mx-export-button></mx-export-button>
         <li>
@@ -36,7 +36,7 @@
 
 <script>
 import mxButton from '@/components/buttons/mxComponents/mxButton.vue';
-import mxOpenXmlGraph from '@/components/buttons/mxActionGroup/mxOpenXMLGraph.vue';
+/*import mxOpenXmlGraph from '@/components/buttons/mxActionGroup/mxOpenXMLGraph.vue';*/
 //import { EventBus } from '../../../event-bus.js';
 import MxImportButton from "./mxImport/mxImportButton";
 import MxExportButton from "./mxExport/mxExportButton";
@@ -78,7 +78,9 @@ export default {
     MxExportButton,
     MxImportButton,
     mxButton,
+/*
     mxOpenXmlGraph,
+*/
     GraphList
   },
   data: function() {
@@ -98,6 +100,11 @@ export default {
     this.editor.addAction('deploy', function(editor, cell) {
       let enc = new mxCodec(mxUtils.createXmlDocument());
       let model = editor.graph.getModel();
+      if (model.getChildVertices(model.root.children[ 0 ]).length === 0) {
+        mxLog.writeln(`ERROR: Could not deploy.`);
+        mxLog.writeln(`The Graph "${that.$store.getters.getGraphName}" is empty.`);
+        return
+      }
       let node = enc.encode(model);
       let store = that.$store;
       this.eb = store.getters.getEb;
@@ -128,6 +135,11 @@ export default {
     this.editor.addAction('redeploy', function(editor, cell) {
       let enc = new mxCodec(mxUtils.createXmlDocument());
       let model = editor.graph.getModel();
+      if (model.getChildVertices(model.root.children[ 0 ]).length === 0) {
+        mxLog.writeln(`ERROR: Could not redeploy.`);
+        mxLog.writeln(`The Graph "${that.$store.getters.getGraphName}" is empty.`);
+        return
+      }
       let node = enc.encode(model);
       let store = that.$store;
       this.eb = store.getters.getEb;
@@ -160,7 +172,8 @@ export default {
       let headers = { cmd: "undeploy", name: store.getters.getGraphName, uid: store.getters.getGraphId };
       this.eb.send('mx.vx', "Undeploy the Graph", headers, (err, res) => {
         if (err == null) {
-          store.dispatch("setGraphStatus", "undeployed");
+          //store.dispatch("setGraphStatus", "undeployed");
+          store.dispatch("setThroughputEnable", false);
         } else {
           mxLog.warn("There is some error in undeploying graph!");
           console.dir(err);
@@ -251,7 +264,7 @@ export default {
               //that.store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
             }
           } else {
-             //store.dispatch("setGraphStatus", "undeployed");
+            //store.dispatch("setGraphStatus", "undeployed");
             mxLog.warn("There is some error in sending graph!");
             console.dir(err);
           }
@@ -288,6 +301,7 @@ export default {
         strGraph += res.body;
         if (res.headers[ 'parts' ] && res.headers[ 'part' ] && res.headers[ 'parts' ] === res.headers[ 'part' ]) {
           editor.setGraph(LZString.decompressFromUTF16(strGraph), res.headers.graph_id, res.headers.graph_name, res.headers.active);
+          store.dispatch("setThroughputEnable", false);
         } else {
           res.reply('Next part, Please.', (err, res) => {
             if (err == null) {
@@ -396,6 +410,9 @@ export default {
           break;
       }
       return this.stateClass;
+    },
+    getStatus: function() {
+      return ( this.$store.state.graphStatus == null ? " " : this.$store.state.graphStatus ).padEnd(35);
     }
   }
 }
@@ -480,12 +497,15 @@ export default {
 }
 
 .status-button {
-  font-size: 12px;
+  font-size: 14px;
+  font-weight: bold;
+  font-variant-caps: unicase;
+  color: initial;
   border-style: inset;
+  width: 115px;
 }
 
 .status-button img {
-  width: 16px;
   height: 16px;
   vertical-align: middle;
   margin-right: 2px;
