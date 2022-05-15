@@ -5,7 +5,6 @@
 <script>
   import JsonObject from "./data";
   import dialogSetting from "./dialogSetting";
-  import RedGreenToggleSwitch from "../mxSwitch/repo/switch/RedGreenToggleSwitch";
   mxCodecRegistry.addAlias(mxUtils.getFunctionName(JsonObject), 'JsonObject');
   export default {
     name: 'mxFile',
@@ -117,7 +116,7 @@
                 }
               });
               instance.$mount(); // pass nothing
-              let h = 250;
+              let h = 203;
               let w = 500;
               let y = ( window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight ) / 2 + window.top.screenY - ( h / 2 );
               let x = ( window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth ) / 2 + window.top.screenX - ( w / 2 );
@@ -125,7 +124,14 @@
                 x = cell.geometry.x;
                 y = cell.geometry.y;
               }
+              x = Math.max(0, document.body.scrollWidth / 2 - w / 2);
+              y = Math.max(10, ( document.body.scrollHeight ||
+                  document.documentElement.scrollHeight ) / 2 - h * 2 / 3);
               wnd = new mxWindow(`#${cell.getId()} File setting`, instance.$el, x, y, w, h, false, true);
+              wnd.addListener(mxEvent.DESTROY, function(evt) {
+                graph.setEnabled(true);
+                mxEffects.fadeOut(prop.background, 50, true, 10, 30, true);
+              });
               wnd.x = x;
               wnd.y = y;
               wnd.setMaximizable(false);

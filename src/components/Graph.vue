@@ -58,7 +58,7 @@ export default {
       return result;
     },
     configureStylesheet: function(graph) {
-      var style = new Object();
+      let style = new Object();
       style[ mxConstants.STYLE_SHAPE ] = mxConstants.SHAPE_RECTANGLE;
       style[ mxConstants.STYLE_PERIMETER ] = mxPerimeter.RectanglePerimeter;
       style[ mxConstants.STYLE_ALIGN ] = mxConstants.ALIGN_CENTER;
@@ -218,13 +218,11 @@ export default {
     let graph = editor.graph;
     // Sets the graph container and configures the editor
     editor.setGraphContainer(this.$el);
-    let config = mxUtils.load(
-        '/editors/config/keyhandler-commons.xml').getDocumentElement();
+    let config = mxUtils.load('/editors/config/keyhandler-commons.xml').getDocumentElement();
     editor.configure(config);
     graph.constrainChildren = false;
     graph.extendParents = false;
     graph.extendParentsOnAdd = false;
-
     mxText.prototype.replaceLinefeeds = false;
     // Defines the default group to be used for grouping. The
     // default group is a field in the mxEditor instance that
@@ -379,7 +377,6 @@ export default {
     graph.dblClick = function(evt, cell) {
       // Do not fire a DOUBLE_CLICK event here as mxEditor will
       // consume the event and start the in-place editor.
-      that.console.dir(cell);
       if (this.isEnabled() &&
           !mxEvent.isConsumed(evt) &&
           cell != null &&
@@ -565,6 +562,7 @@ export default {
       let xmlDocument = mxUtils.parseXml(xmlModel);
       if (xmlDocument.documentElement != null && xmlDocument.documentElement.nodeName === 'mxGraphModel') {
         EventBus.$off();
+        this.windows.closeAll();
         let decoder = new mxCodec(xmlDocument);
         let node = xmlDocument.documentElement;
         that.$store.dispatch("setGraphId", graph_id);
@@ -587,6 +585,7 @@ export default {
         let cell0 = editor.graph.getModel().getCell(0);
         let version = cell0.version;
         that.$store.commit("SET_VERSION", version);
+        //that.$store.dispatch("setLabel", editor);
       }
     }
     this.$store.subscribe((mutation, state) => {
@@ -642,6 +641,150 @@ export default {
           break;
       }
     });
+
+    //Some methods and helpers to address cross tabs and browser copy/cut/paste
+    // Public helper method for shared clipboard.
+    let gs = graph.gridSize;
+    let lastPaste = null;
+    let dx = 0;
+    let dy = 0;
+
+    mxClipboard.cellsToString = function(cells) {
+      let codec = new mxCodec();
+      let model = new mxGraphModel();
+      let parent = model.getChildAt(model.getRoot(), 0);
+
+      for (let i = 0; i < cells.length; i++) {
+        model.add(parent, cells[ i ]);
+      }
+
+      return mxUtils.getXml(codec.encode(model));
+    };
+
+    // Inserts the XML for the given cells into the text input for copy
+    let copyCells = function(graph, cells) {
+      if (cells.length > 0) {
+        let clones = graph.cloneCells(cells);
+        // Checks for orphaned relative children and makes absolute
+        for (let i = 0; i < clones.length; i++) {
+          let state = graph.view.getState(cells[ i ]);
+          if (state != null) {
+            let geo = graph.getCellGeometry(clones[ i ]);
+            if (geo != null && geo.relative) {
+              geo.relative = false;
+              geo.x = state.x / state.view.scale - state.view.translate.x;
+              geo.y = state.y / state.view.scale - state.view.translate.y;
+            }
+          }
+        }
+        lastPaste = mxClipboard.cellsToString(clones);
+        return lastPaste
+      }
+      return "";
+    };
+
+    // Merges XML into existing graph and layers
+    let importXml = function(xml, dx, dy) {
+      dx = ( dx != null ) ? dx : 0;
+      dy = ( dy != null ) ? dy : 0;
+      let cells = []
+
+      try {
+        let doc = mxUtils.parseXml(xml);
+        let node = doc.documentElement;
+
+        if (node != null) {
+          let model = new mxGraphModel();
+          let codec = new mxCodec(node.ownerDocument);
+          codec.decode(node, model);
+
+          let childCount = model.getChildCount(model.getRoot());
+          let targetChildCount = graph.model.getChildCount(graph.model.getRoot());
+
+          // Merges existing layers and adds new layers
+          graph.model.beginUpdate();
+          try {
+            for (let i = 0; i < childCount; i++) {
+              let parent = model.getChildAt(model.getRoot(), i);
+
+              // Adds cells to existing layers if not locked
+              if (targetChildCount > i) {
+                // Inserts into active layer if only one layer is being pasted
+                let target = ( childCount == 1 ) ? graph.getDefaultParent() : graph.model.getChildAt(graph.model.getRoot(), i);
+
+                if (!graph.isCellLocked(target)) {
+                  let children = model.getChildren(parent);
+                  cells = cells.concat(graph.importCells(children, dx, dy, target));
+                }
+              } else {
+                // Delta is non cascading, needs separate move for layers
+                parent = graph.importCells([parent], 0, 0, graph.model.getRoot())[ 0 ];
+                let children = graph.model.getChildren(parent);
+                graph.moveCells(children, dx, dy);
+                cells = cells.concat(children);
+              }
+            }
+          } finally {
+            graph.model.endUpdate();
+          }
+        }
+      } catch (e) {
+        alert(e);
+        throw e;
+      }
+
+      return cells;
+    };
+
+    // Parses and inserts XML into graph
+    let pasteText = function(text) {
+      let xml = mxUtils.trim(text);
+      let x = graph.container.scrollLeft / graph.view.scale - graph.view.translate.x;
+      let y = graph.container.scrollTop / graph.view.scale - graph.view.translate.y;
+
+      if (xml.length > 0) {
+        if (lastPaste != xml) {
+          lastPaste = xml;
+          dx = 0;
+          dy = 0;
+        } else {
+          dx += gs;
+          dy += gs;
+        }
+
+        // Standard paste via control-v
+        if (xml.substring(0, 14) == '<mxGraphModel>') {
+          graph.setSelectionCells(importXml(xml, dx, dy));
+          graph.scrollCellToVisible(graph.getSelectionCell());
+        }
+      }
+    };
+
+    if (typeof ( Storage ) !== "undefined") {
+      // Code for localStorage
+      mxClipboard.copy = function(graph, cells) {
+        cells = cells || graph.getSelectionCells();
+        let result = graph.getExportableCells(graph.model.getTopmostCells(cells));
+        mxClipboard.insertCount = 1;
+        mxClipboard.setCells(graph.cloneCells(result));
+        window.localStorage.setItem('ceramic.clipboard', copyCells(graph, mxUtils.sortCells(result)));
+        dx = 0;
+        dy = 0;
+        return result;
+      };
+
+      mxClipboard.paste = function(graph)
+      {
+        if (graph.isEnabled()) {
+          let xml = window.localStorage.getItem('ceramic.clipboard');
+          if (xml != null && xml.length > 0) {
+            pasteText(xml);
+          }
+        }
+      };
+    } else {
+      console.info("Storage object is undefined!")
+    }
   }
 }
 </script>

@@ -13,24 +13,12 @@
     </Dialog>
 </template>
 <script>
-  import dialogProcess from '../mxProcess/dialogProcess.vue';
-  import dialogSwitch from '../mxSwitch/dialogSwitch.vue';
   import dialogBuffer from '../mxBuffer/dialogBuffer.vue';
-  //import dialogChart from '../mxChart/dialogChart.vue';
-  import dialogWebspheremq from '../mxWebsphereMq/dialogWebsphereMq.vue';
-  import dialogFile from '../mxFile/dialogFile.vue';
-  import dialogDatabase from '../mxDatabase/dialogDatabase.vue';
 
   export default {
     name: 'mxWindow',
     components: {
-      dialogProcess,
-      dialogSwitch,
       dialogBuffer,
-      //dialogChart,
-      dialogWebspheremq,
-      dialogFile,
-      dialogDatabase
     },
     data() {
       return {

@@ -10,6 +10,7 @@ function Config() {
   this.pass = null;
   this.channelName = null;
   this.instance = null;
+  this.codepage = null;
   this.readAhead = null;
 }
 

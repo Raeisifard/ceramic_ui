@@ -20,21 +20,21 @@ import mxProcess from './tools/mxProcess/mxProcess.vue';
 import mxSwitch from './tools/mxSwitch/mxSwitch.vue';
 import mxInfo from './tools/mxInfo/mxInfo.vue';
 import MxBuffer from "./tools/mxBuffer/mxBuffer";
-import MxChart from "./tools/mxChart/mxChart";
+//import MxChart from "./tools/mxChart/mxChart";
 import MxWebsphereMq from "./tools/mxWebsphereMq/mxWebsphereMq";
 import MxFile from "./tools/mxFile/mxFile";
 import MxDatabase from "./tools/mxDatabase/mxDatabase";
 import MxParquet from "./tools/mxParquet/mxParquet";
-import MxPattern from "@/components/tools/mxPattern/mxPattern";
-import MxiFrame from "@/components/tools/mxiFrame/mxiFrame";
+//import MxPattern from "@/components/tools/mxPattern/mxPattern";
+//import MxiFrame from "@/components/tools/mxiFrame/mxiFrame";
 
 export default {
   name: 'Sidebar',
   components: {
-    MxiFrame,
+   /* MxiFrame,
     MxPattern,
     MxChart,
-    MxBuffer,
+    MxBuffer,*/
     MxWebsphereMq,
     MxFile,
     MxDatabase,

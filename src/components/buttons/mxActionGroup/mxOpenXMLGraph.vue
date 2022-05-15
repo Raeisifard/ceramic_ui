@@ -77,7 +77,7 @@
           let xmlDoc = mxUtils.parseXml(data);
           let codec = new mxCodec(xmlDoc);
           codec.decode(xmlDoc.documentElement, that.graph.getModel());
-          that.setVueComponents(that.graph.getModel());//Inject vue components to related mxCell
+          //that.setVueComponents(that.graph.getModel());//Inject vue components to related mxCell
         };
         reader.readAsText(input.files[ 0 ]);
 

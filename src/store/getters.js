@@ -124,8 +124,8 @@ export default {
     if (name === undefined)
       if (cell.getType() === 'switch')
         vueObj = state.vueObject[ "vue_" + cell.getData().config[ "switchName" ] ];
-      else if (cell.getType() === 'chart') {
-        vueObj = state.vueObject[ "vue_" + cell.getData().config[ "chartName" ] ];
+      else if (cell.getType() === 'process') {
+        vueObj = state.vueObject[ "vue_chart" ];
       } else
         vueObj = state.vueObject[ "vue_" + cell.getType() ];
     else

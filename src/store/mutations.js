@@ -62,7 +62,7 @@ export default {
   SET_JSON_GRAPH: (state, jsonGraph) => {
     state.jsonGraph = jsonGraph;
   },
-  ADD_VUE_COMPONENT: (state, vueComponent) => {
+  ADD_VUE_COMPONENT: (state, vueComponent) => {//Off use
     state.vueComponents[vueComponent.$options.name] = vueComponent;
   },
   ADD_VUE_OBJECT: (state, vueObject) => {

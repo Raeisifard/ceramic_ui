@@ -62,6 +62,7 @@ export default {
       background.style.right = '0px';
       background.style.bottom = '0px';
       background.style.background = 'black';
+      background.style.zIndex = '1';
       mxUtils.setOpacity(background, 50);
       return background;
     },

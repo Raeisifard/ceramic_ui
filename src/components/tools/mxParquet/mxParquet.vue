@@ -1,13 +1,17 @@
 <template>
-  <div id="blocklysContainer"></div>
+  <div id="blocklysContainer">
+    <mx-code-editor v-if="showCode" @close="showCode=false" :cell="cell"></mx-code-editor>
+  </div>
 </template>
 
 <script>
 import JsonObject from "./data";
+import MxCodeEditor from "./mxCodeEditor";
 
 mxCodecRegistry.addAlias(mxUtils.getFunctionName(JsonObject), 'JsonObject');
 export default {
   name: "mxParquet",
+  components: { MxCodeEditor },
   props: {
     sidebar: {
       required: true
@@ -21,7 +25,11 @@ export default {
           '<h3 style="margin:0;">Parquet</h3>' +
           '<img src="/src/images/icons48/parquet.png" width="48" height="48">',
       bc: null,
-      gid: null
+      gid: null,
+      cid: null,
+      cell: null,
+      timerInterval: null,
+      showCode: false,
     }
   },
   methods: {
@@ -101,6 +109,11 @@ export default {
     },
     openEditor: function(menu, cell, evt, cx) {
       cx.gid = cx.$store.getters.getGraphId;
+      cx.cid = cell.getId();
+      if (this.timerInterval) {
+        clearInterval(this.timerInterval);
+        this.timerInterval = null;
+      }
       if (cx.bc != null) {
         cx.bc.close();
         cx.bc = null;
@@ -114,7 +127,8 @@ export default {
           let cell = graph.model.getCell(cid);
           switch (ev.data.cmd) {
             case 'getCellData':
-              cx.bc.postMessage({ cmd: 'setCellData', xml: cell.getData().xml, gid: gid, cid: cid });
+              if (cell.getType() === 'parquet')
+                cx.bc.postMessage({ cmd: 'setCellData', xml: cell.getData().xml, gid: gid, cid: cid });
               break;
             case 'setCellCode':
               cell.data.xml = ev.data.xml;
@@ -125,9 +139,19 @@ export default {
           }
         }
       }
+      this.timerInterval = setInterval(this.sendHeartbeat, 2000);
       let cid = cell.getId();
       let routeData = this.$router.resolve({ name: 'parquet', query: { gid: cx.gid, cid: cid } });
       window.open(routeData.href, '_blank');
+    },
+    openCode: function(menu, cell, evt, cx) {
+      this.cell = cell;
+      this.showCode = true;
+    },
+    sendHeartbeat: function() {
+      if (this.bc) {
+        this.bc.postMessage({ cmd: 'heartbeat', gid: this.gid, cid: this.cid });
+      }
     }
   },
   mounted() {
@@ -145,8 +169,13 @@ export default {
     graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() === 'parquet') {
-        menu.addItem('Open Parquet Editor', 'editors/images/new-window.png', function() {
+        menu.addItem('Open Editor', 'editors/images/new-window.png', function() {
           that.openEditor(menu, cell, evt, that);
+        });
+        menu.tbody.getElementsByClassName('mxPopupMenuIcon')[ 0 ].style.display = 'flex';
+        menu.tbody.getElementsByClassName('mxPopupMenuIcon')[ 0 ].style.justifyContent = 'center';
+        menu.addItem('Send Code', 'editors/images/send.png', function() {
+          that.openCode(menu, cell, evt, that);
         });
       }
     };

@@ -2,16 +2,13 @@ import EB from "vertx3-eventbus-client";
 import { EventBus } from "../event-bus";
 import { CONNECTION_STATUS } from "./constants.js";
 
-let myHandler = function(error, message) {
-  EventBus.$emit(`${message.headers.address}`, message);
-  mxLog.debug('received a message: ' + JSON.stringify(message));
-};
+let myHandler = null;
 
 let chunkSubstr = function(str, size) {
   const numChunks = Math.ceil(str.length / size)
   const chunks = new Array(numChunks)
   for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
-    chunks[i] = str.substr(o, size)
+    chunks[ i ] = str.substr(o, size)
   }
   return chunks
 };
@@ -66,6 +63,9 @@ export default {
       try {
         let eb = new EB(config.vertxbus.BusAddress, options);
         eb.enableReconnect(config.vertxbus.enableReconnect);
+        eb.enablePing = function(enable) {
+          eb.sockJSConn.send(JSON.stringify({ type: 'ping' }));
+        };
         eb.onopen = function() {
           ctx.dispatch("setConnected", true);
           // set a handler to receive a message
@@ -76,8 +76,11 @@ export default {
               console.dir(error);
             } else {
               let headers = message.headers;
-              if (headers.cmd && headers.cmd === 'status' && headers["graph_id"].toLowerCase() ===  context.getters.getGraphId){
-                switch (message.body){
+              if (typeof message.body === 'object' && message.body.type && message.body.type === 'sync') {
+                eb.enablePing(true);
+                return;
+              } else if (headers.cmd && headers.cmd === 'status' && headers[ "graph_id" ].toLowerCase() === context.getters.getGraphId) {
+                switch (message.body) {
                   case "DEPLOYED":
                     let editor = context.state.editor;
                     editor.setGraph(mxUtils.getXml(new mxCodec(mxUtils.createXmlDocument()).encode(editor.graph.getModel())),
@@ -136,21 +139,62 @@ export default {
     });
   },
   setGraphId: (context, graphId) => {
+    if (myHandler === null) {
+      myHandler = ( function(error, message) {
+        if (message.headers.type === 'process') {
+          let id = message.headers.id;
+          let cmd = message.headers.cmd || message.body.cmd;
+          if (cmd === 'label' && message.body.label) {
+            let cell = this.getters.getModel.getCell(id);
+            cell.setValue(message.body);
+            let state = this.getters.getGraph.view.getState(cell);
+            if (message.headers.fillColor) {
+              state.style[ mxConstants.STYLE_FILLCOLOR ] = message.headers.fillColor;
+            }
+            if (message.headers.opacity) {
+              state.style[ mxConstants.STYLE_OPACITY ] = message.headers.opacity;
+            }
+            if (message.headers.gradientColor) {
+              state.style[ mxConstants.STYLE_GRADIENTCOLOR ] = message.headers.gradientColor;
+            }
+            state.shape.apply(state);
+
+            mxCellRenderer.prototype.redrawLabel(state, true);
+
+            state.shape.redraw();
+          } else if (cmd === 'chart') {
+            let cell = this.getters.getModel.getCell(id);
+            //cell.label = message.body;
+            //cell.setValue(message.body);
+            if (cell.vueComponent)
+              cell.vueComponent.$children[ 0 ].alertData(message.body);
+            let state = this.getters.getGraph.view.getState(cell);
+            state.shape.apply(state);
+            mxCellRenderer.prototype.redrawLabel(state, true);
+          }
+        } else {
+          EventBus.$emit(`${message.headers.address}`, message);
+        }
+        mxLog.debug('received a message: ' + JSON.stringify(message));
+      } ).bind(context)
+    }
     let eb = context.getters.getEb;
     let id = context.getters.getGraphId;
-    if (eb != null && id != null)
-      try {//Unregister previous uid listener if any.
-        eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
-      } catch (e) {
-        console.dir(e);
-      }
+    if (eb != null && id != null && myHandler != null)
+      if (id != graphId)
+        try {//Unregister previous uid listener if any.
+          eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+          eb.registerHandler(`vx.mx.${graphId}`.toLowerCase(), myHandler);
+        } catch (e) {
+          console.dir(e);
+        }
     let bc = context.getters.getBc;
     if (bc != null && id != null) {
       bc.close();
     }
     id = graphId;
     context.commit("SET_GRAPH_ID", id);
-    //eb.registerHandler(`vx.mx.${id}`, myHandler);// set a handler to receive a message
+    //eb.registerHandler(`vx.mx.${id}`, myHandler.bind(context));// set a handler to receive a message
     context.commit("SET_BC", new BroadcastChannel(id));
   },
   setGraphName: (context, graphName) => {
@@ -160,16 +204,17 @@ export default {
   setGraphStatus: (context, graphStatus) => {
     let eb = context.getters.getEb;
     let id = context.getters.getGraphId;
+
     context.commit("SET_GRAPH_STATUS", graphStatus);
     if (graphStatus === 'deployed') {
-      eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+      //eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
       /*try {//Unregister previous uid listener
         //eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
       } finally {
         eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);// set a handler to receive graph messages
       }*/
-    }else{
-      eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+    } else {
+      //eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
     }
   },
   setGraphState: (context, graphState) => {
@@ -207,7 +252,7 @@ export default {
       }
     });
   },
-  sendSetting2VX: (context, cell) => {
+  sendCode2VX: (context, cell) => {
     let status = context.getters.getGraphStatus;
     if (status === 'undeployed') {
       return -1;//The Graph must already deployed!
@@ -225,7 +270,33 @@ export default {
         id: cell.getId(),
       }
     };
-    eb.send('mx.vx', JSON.stringify(cell.getData().setting), headers, (err, res) => {
+    eb.send('mx.vx', JSON.stringify({ code: cell.getData().code }), headers, (err, res) => {
+      if (err == null) {
+        mxLog.debug(res.body);
+      } else {
+        mxLog.warn(err);
+      }
+    });
+  },
+  sendSetting2VX: (context, cell, data) => {
+    let status = context.getters.getGraphStatus;
+    if (status === 'undeployed') {
+      return -1;//The Graph must already deployed!
+    }
+    let eb = context.getters.getEb;
+    if (eb.state !== CONNECTION_STATUS.OPEN)
+      return -1;
+    let headers = {
+      ...cell.getData().config,
+      ...{
+        cmd: "set",
+        name: context.getters.getGraphName,
+        uid: context.getters.getGraphId,
+        type: cell.getType(),
+        id: cell.getId(),
+      }
+    };
+    eb.send('mx.vx', JSON.stringify(data || cell.getData().setting), headers, (err, res) => {
       if (err == null) {
         mxLog.debug(res.body);
       } else {
@@ -279,7 +350,7 @@ export default {
   setThroughputEnable: (context, enable) => {
     context.commit("SET_THROUGHPUT_ENABLE", enable);
   },
-  graph2vx: (context, {editor, cmd}) => {
+  graph2vx: (context, { editor, cmd }) => {
     let enc = new mxCodec(mxUtils.createXmlDocument());
     let model = editor.graph.getModel();
     let node = enc.encode(model);
@@ -299,6 +370,17 @@ export default {
         console.dir(err);
       }
     });
-  }
-
+  },
+  /*setLabel: (context, editor) => {
+    let model = editor.graph.model
+    Object.entries(model.cells).forEach(entry => {
+      let cell = entry[ 1 ];
+      if (cell.type && cell.getType() === 'process' && cell.getValue().label) {
+        cell.label = cell.getValue().label;
+        let state = editor.graph.view.getState(cell);
+        state.shape.apply(state);
+        mxCellRenderer.prototype.redrawLabel(state, true);
+      }
+    })
+  },*/
 }

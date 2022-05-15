@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Editor from './views/Editor.vue'
+import Chart from "./views/Chart"
 
 Vue.use(Router);
 
@@ -58,9 +59,7 @@ export default new Router({
     {
       path: '/chart',
       name: 'chart',
-      component: function() {
-        return import('vue-chartjs/src/examples/App.vue')
-      }
+      component: Chart,
     },
     {
       path: '/switch',

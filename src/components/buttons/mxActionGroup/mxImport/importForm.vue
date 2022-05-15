@@ -34,6 +34,7 @@
           let decoder = new mxCodec(xmlDocument);
           let node = xmlDocument.documentElement;
           let model = editor.graph.getModel();
+          editor.windows.closeAll();
           let oldUid = model.getCell(0).uid.trim();
           decoder.decode(node, model);
           let uid = model.getCell(0).uid;

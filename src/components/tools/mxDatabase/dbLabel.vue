@@ -5,8 +5,8 @@
         <img :src="`${imgPreUrl}/${dbName}.png`" width="48" height="48">
         <select name="cars" v-model="dbName">
             <option value="SqlServer">SQL Server</option>
-            <option value="ArangoDb">Arango DB</option>
-            <option value="Nitrite">Nitrite</option>
+<!--            <option value="ArangoDb">Arango DB</option>
+            <option value="Nitrite">Nitrite</option>-->
         </select>
     </div>
 </template>

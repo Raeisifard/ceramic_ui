@@ -1,0 +1,206 @@
+.icon-ip {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/ip.png');
+}
+
+.icon-port {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/port.png');
+}
+
+.icon-folder {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/folder.png');
+}
+
+.icon-file {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/file.png');
+}
+
+.file-lock {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/lock.png');
+}
+
+.icon-done {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/done.png');
+}
+
+.icon-clearbrush {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/clear.png');
+}
+
+.ok {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/connection1.png');
+}
+
+.unknown {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/connection0.png');
+}
+
+.failed {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/connection-1.png');
+}
+
+.process {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/connection0.png');
+}
+
+.db-ok {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/db-connection1.png');
+}
+
+.db-unknown {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/db-connection0.png');
+}
+
+.db-failed {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/db-connection-1.png');
+}
+
+.db-process {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/db-connection0.png');
+}
+
+.icon-qm {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/qm.png');
+}
+
+.icon-queue {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/queue.png');
+}
+
+.icon-user {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/user.png');
+}
+
+.icon-pass {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/pass.png');
+}
+
+.icon-channel {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/channel.png');
+}
+
+.icon-instance {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/instance.png');
+}
+
+.icon-codepage {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/codepage.png');
+}
+
+.icon-readahead {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/readahead.png');
+}
+
+.icon-database {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/database-icon.png');
+}
+
+.icon-buffer {
+    background-repeat: no-repeat;
+    background-image: url('/src/icons/buffer.png');
+}
+
+.pulsating-circle {
+/*    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    width: 30px;
+    height: 30px;*/
+}
+
+.pulsating-circle:before {
+    content: "";
+    position: relative;
+    display: block;
+    width: 300%;
+    height: 300%;
+    box-sizing: border-box;
+    margin-left: -100%;
+    margin-top: -100%;
+    border-radius: 45px;
+    background-color: #01a4e9;
+    -webkit-animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.pulsating-circle:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    /*background-color: white;*/
+    border-radius: 15px;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+    -webkit-animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
+    animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
+}
+
+@-webkit-keyframes pulse-ring {
+    0% {
+        transform: scale(0.33);
+    }
+    80%, 100% {
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.33);
+    }
+    80%, 100% {
+        opacity: 0;
+    }
+}
+
+@-webkit-keyframes pulse-dot {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0.8);
+    }
+}
+
+@keyframes pulse-dot {
+    0% {
+        transform: scale(0.8);
+    }
+    50% {
+        transform: scale(1);
+    }
+    100% {
+        transform: scale(0.8);
+    }
+}
+

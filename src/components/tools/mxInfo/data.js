@@ -1,10 +1,11 @@
 const type = "INFO";
 
 function Config() {
-  this.info = '<h1 style="margin:0;">Info & Doc</h1>' +
-    '<img src="/src/images/icons48/info.png" width="48" height="48">' +
+  this.info = '<br>' +
+    '<h1 style="margin:0;">Info & Doc</h1>' +
     '<br>' +
-    '<a href="http://www.jgraph.com" target="_blank">Edit</a>';
+    '<img src="/src/images/icons48/info.png" width="48" height="48">';
+    /*'<a href="http://www.jgraph.com" target="_blank">Edit</a>';*/
   this.fillColor = 'rgb(24,255,150,0.65)';
   this.style = {};
   this.style['STYLE_VERTICAL_ALIGN'] = 'ALIGN_TOP';

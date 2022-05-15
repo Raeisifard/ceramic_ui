@@ -1,14 +1,24 @@
 <template>
-
+  <component :is="dialogName" v-if="showDialog" :cell="cell" @close="showDialog=false"></component>
 </template>
 
 <script>
 import JsonObject from "./data";
+import editor from './mxDialogEditor';
+import config from './mxDialogConfig';
+import setting from './mxDialogSetting';
+import MxWindow from "./chart/dialog/mxWindow";
+import { CONNECTION_STATUS } from "../../../store/constants";
 
 mxCodecRegistry.addAlias(mxUtils.getFunctionName(JsonObject), 'JsonObject');
 export default {
   name: 'mxProcess',
-  components: {},
+  components: {
+    //MxWindow,
+    editor,
+    config,
+    setting
+  },
   props: {
     sidebar: {
       required: true
@@ -24,48 +34,57 @@ export default {
         '<br>' +
         '<img src="/src/images/icons48/process.png" width="48" height="48">',*/
       dialog: null,
+      showDialog: false,
+      dialogName: null,
+      cell: null,
     }
   },
   methods: {
-    getLabel: function(cell) {
+    /*getLabel: function(cell) {
       if (cell.getData().fName === "SampleVerticle")
         return `<h1 style="margin:0;">${cell.getType().charAt(0).toUpperCase() + cell.getType().slice(1)}</h1><br>
                     <img src="/src/images/icons48/process.png" width="48" height="48">`;
       else
         return `<h1 style="margin:0;">${cell.getType().charAt(0).toUpperCase() + cell.getType().slice(1)}</h1><h2>${cell.getData().fName}</h2><img src="/src/images/icons48/process.png" width="48" height="48">`;
+    },*/
+    getWindow: function(cell) {
+      if (!cell.vueComponent) {
+        //cell.vueComponent = this.getVueComponent(cell, this).vueComponent;
+        cell.vueComponent = this.$store.getters.getVueComponentByObject(this, cell);
+      }
     },
+    /*getVueComponent: function(cell, ctx) {
+      const _chart = {
+        name: "chart",
+        components: {
+          MxWindow
+        },
+        props: ['cell', 'store'],
+        template: '<mx-window :cell="cell" :store="store"></mx-window>',
+      };
+      const ComponentClass = Vue.extend(_chart);
+      let instance = new ComponentClass({
+        propsData: { cell: cell, store: ctx.$store }
+      });
+      instance.$mount();
+
+      function vueComponent(val) {
+        this.vueComponent = val;
+      }
+
+      return new vueComponent(instance);
+    },*/
     openEditor: function(menu, cell, evt, cx) {
-      let cmd = {};
-      cmd.style = { width: '90%', height: '90%' };
-      cmd.name = "editor";
-      cmd.title = "Process Editor";
-      cx.$store.dispatch("setCell", cell);
-      cx.$store.commit("SET_CMD", cmd);
-      window.easyDialog.open();
-      window.easyDialog.moveToTop();
-      window.easyDialog.center();
+      this.dialogName = 'editor';
+      this.showDialog = true;
     },
     openConfig: function(menu, cell, evt, cx) {
-      let cmd = {};
-      cmd.style = { width: '500px', height: '500px' };
-      cmd.name = "config";
-      cmd.title = "Process Configuration";
-      cx.$store.dispatch("setCell", cell);
-      cx.$store.commit("SET_CMD", cmd);
-      window.easyDialog.open();
-      window.easyDialog.moveToTop();
-      window.easyDialog.center();
+      this.dialogName = 'config';
+      this.showDialog = true;
     },
     openSetting: function(menu, cell, evt, cx) {
-      let cmd = {};
-      cmd.style = { width: '500px', height: '500px' };
-      cmd.name = "setting";
-      cmd.title = "Process Setting";
-      cx.$store.dispatch("setCell", cell);
-      cx.$store.commit("SET_CMD", cmd);
-      window.easyDialog.open();
-      window.easyDialog.moveToTop();
-      window.easyDialog.center();
+      this.dialogName = 'setting';
+      this.showDialog = true;
     },
     addSidebarIcon: function(graph, sidebar, label, image) {
       // Function that is executed when the image is dropped on
@@ -147,17 +166,26 @@ export default {
       if (this.model.isVertex(cell) && cell.getType() === that.jsonObject.type) {
         if (this.isCellCollapsed(cell))
           return `<h2>${cell.getData().fName}</h2>`;
-        else
+        else if (typeof cell.getValue() === 'object' && cell.getValue().label && cell.getValue().label.length > 0)//We have label here.
+          return cell.getValue().label;
+        else if (( cell.getData().config.chart && cell.getData().config.chart.type )
+            || ( typeof cell.getValue() === 'object' && Object.keys(cell.getValue()).length > 0 )) {//We have Chart here.
+          if (!cell.vueComponent)
+            cell.vueComponent = that.$store.getters.getVueComponentByObject(that, cell);
+          return cell.vueComponent.$el;
+        } else {//We have normal Process here.
           return `<h1 style="margin:0;">${cell.getType().charAt(0).toUpperCase() + cell.getType().slice(1)}</h1><img src="/src/images/icons48/process.png" width="48" height="48">`;
-      }
-      return graphConvertValueToString.apply(this, arguments);
-    };
+        }
+      } else//Other types of widgets
+        return graphConvertValueToString.apply(this, arguments);
+    }
+
     // Installs context menu
     let defaultMenu = graph.popupMenuHandler.factoryMethod;
     graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() == 'process') {
-
+        that.cell = cell;
         menu.addItem('Config', 'editors/images/config.png', function() {
           that.openConfig(menu, cell, evt, that);
         });
@@ -178,9 +206,46 @@ export default {
          }, submenu1);*/
       }
     };
+    const _chart = {
+      name: "vue_chart",
+      components: {
+        MxWindow
+      },
+      props: ['cell', 'store'],
+      template: '<mx-window :cell="cell" :store="store"></mx-window>',
+    };
+    this.$store.commit("ADD_VUE_OBJECT", _chart);
     this.$nextTick(function() {
       that.addSidebarIcon(graph, that.sidebar, that.label, that.image);
     })
+    window.getChart = function(gid, cid) {
+      let cell = graph.getModel().getCell(cid);
+      if (cell.getData().config.chart && cell.getData().config.chart.type)
+        cell.vueComponent.$children[ 0 ].frame.contentWindow.updateChart(JSON.parse(JSON.stringify(cell.getData().config.chart)));
+      let status = that.$store.getters.getGraphStatus;
+      if (status === 'undeployed') {
+        return -1;//The Graph must already deployed!
+      }
+      let eb = that.$store.getters.getEb;
+      if (eb.state !== CONNECTION_STATUS.OPEN)
+        return -1;
+      let headers = {
+        cmd: "chart",
+        name: that.$store.getters.getGraphName,
+        uid: gid,
+        type: 'process',
+        id: cid,
+      };
+      eb.send('mx.vx', '{}', headers, (err, res) => {
+        if (err == null) {
+          //console.dir(res.body);
+          cell.vueComponent.$children[ 0 ].frame.contentWindow.updateChart(res.body);
+        } else {
+          mxLog.warn(err);
+        }
+      });
+
+    }
     // const oldDeploy = editor.deploy;
     // editor.deploy = function(mxCell) {
     //   let jModel = oldDeploy(mxCell);

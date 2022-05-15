@@ -82,7 +82,7 @@
         });
         instance.$mount();
         let graph = editor.graph;
-        that.showModalWindow(graph, 'XML', instance.$el, 410, 440, that);//that.$refs.exportForm.$el.firstElementChild
+        that.showModalWindow(graph, 'XML', instance.$el, 410, 445, that);//that.$refs.exportForm.$el.firstElementChild
       });
     }
   }

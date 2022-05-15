@@ -9,6 +9,7 @@
     <style type="text/css" media="screen">
         @import url('./tinymce/themes/advanced/fonts/iran_sans/style.css');
         @import url('./tinymce/themes/advanced/fonts/yekan/stylesheet.css');
+        @import url('./src/css/icons.css');
         BODY {
             font-family: Arial,sans-serif;
             margin: 0;
@@ -44,6 +45,12 @@
 <script>
 
   const easyDialog = null;
+  mxCell.prototype.mxTransient.push('vueComponent');
+  mxCell.prototype.mxTransient.push('label');
+  mxCell.prototype.svg = false;
+  mxCell.prototype.isSvg = function(){
+    return this.svg;
+  };
   mxCell.prototype.version = null;
   mxCell.prototype.getVersion = function() {
     return this.version;
