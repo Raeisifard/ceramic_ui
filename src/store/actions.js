@@ -67,6 +67,7 @@ export default {
           eb.sockJSConn.send(JSON.stringify({ type: 'ping' }));
         };
         eb.onopen = function() {
+          console.log("EB on open handler called.")
           ctx.dispatch("setConnected", true);
           // set a handler to receive a message
           eb.registerHandler('vx.mx', function(error, message) {
@@ -99,8 +100,18 @@ export default {
               //EventBus.$emit(unit, message);
             }
           });
+          let id = ctx.getters.getGraphId;
+          try {//Unregister previous uid listener if any.
+            eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+            console.log("EB unregister handler");
+            eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+            console.log("EB register handler");
+          } catch (e) {
+            console.dir(e);
+          }
         };
         eb.onerror = function(err) {
+          console.log("EB on error handler called.");
           try {
             ctx.dispatch("setConnected", false);
             mxLog.enter(JSON.stringify(err));
@@ -184,7 +195,9 @@ export default {
       if (id != graphId)
         try {//Unregister previous uid listener if any.
           eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+          console.log("EB unregister handler");
           eb.registerHandler(`vx.mx.${graphId}`.toLowerCase(), myHandler);
+          console.log("EB register handler");
         } catch (e) {
           console.dir(e);
         }

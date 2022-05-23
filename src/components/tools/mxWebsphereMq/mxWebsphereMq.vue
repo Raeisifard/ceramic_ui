@@ -134,7 +134,7 @@ export default {
           mxEffects.fadeOut(that.background, 50, true, 10, 30, true);
         },
         configOk: function($event) {
-          that.cell.setData({...that.cell.getData(), ...{config: $event}});
+          that.cell.setData(Object.assign(that.cell.getData(), { ...that.cell.getData(), ...{ config: $event } }));
           that.wndConfig.destroy();
           that.graph.setEnabled(true);
           mxEffects.fadeOut(that.background, 50, true, 10, 30, true);
