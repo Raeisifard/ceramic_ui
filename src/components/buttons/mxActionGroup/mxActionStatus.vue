@@ -15,15 +15,15 @@
           <a @click.prevent="newGraph">New</a>
         </li>
         <li>
-          <a @click.prevent="deploy">Deploy</a>
+          <a v-if="isDeployEnable" @click.prevent="deploy">Deploy</a>
         </li>
         <li>
-          <a @click.prevent="undeploy">Undeploy</a>
+          <a v-if="isUndeployEnable" @click.prevent="undeploy">Undeploy</a>
         </li>
         <li>
-          <a @click.prevent="redeploy">Redeploy</a>
+          <a v-if="isRedeployEnable" @click.prevent="redeploy">Redeploy</a>
         </li>
-<!--          <mx-open-xml-graph :max=1></mx-open-xml-graph>-->
+        <!--          <mx-open-xml-graph :max=1></mx-open-xml-graph>-->
           <mx-import-button></mx-import-button>
           <mx-export-button></mx-export-button>
         <li>
@@ -31,20 +31,21 @@
         </li>
       </ul>
         <graph-list v-if="showGraphList" @closeGraphList="showList"></graph-list>
+        <confirm-alert v-if="confirmAlert" @cancel="confirmAlert=false;" @confirm="confirm($event)"
+                       :action="action"></confirm-alert>
     </span>
 </template>
 
 <script>
+const pako = require('pako');
 import mxButton from '@/components/buttons/mxComponents/mxButton.vue';
-/*import mxOpenXmlGraph from '@/components/buttons/mxActionGroup/mxOpenXMLGraph.vue';*/
-//import { EventBus } from '../../../event-bus.js';
+
 import MxImportButton from "./mxImport/mxImportButton";
 import MxExportButton from "./mxExport/mxExportButton";
 import { CONNECTION_STATUS } from "@/store/constants.js";
 import Graph from "../../Graph";
 import GraphList from "./tools/GraphList";
-//import JSZip from "jszip";
-import LZString from 'lz-string';
+import ConfirmAlert from "./tools/ConfirmAlert";
 
 class JsonCodec extends mxObjectCodec {
   constructor() {
@@ -74,13 +75,14 @@ class JsonCodec extends mxObjectCodec {
 export default {
   name: "mxDeployButton",
   components: {
+    ConfirmAlert,
     Graph,
     MxExportButton,
     MxImportButton,
     mxButton,
-/*
-    mxOpenXmlGraph,
-*/
+    /*
+        mxOpenXmlGraph,
+    */
     GraphList
   },
   data: function() {
@@ -92,7 +94,8 @@ export default {
       openXmlGraph: false,
       image: "/src/images/deploy.png",
       stateClass: "closed",
-      showGraphList: false
+      showGraphList: false,
+      confirmAlert: false
     }
   },
   mounted() {
@@ -100,39 +103,32 @@ export default {
     this.editor.addAction('deploy', function(editor, cell) {
       let enc = new mxCodec(mxUtils.createXmlDocument());
       let model = editor.graph.getModel();
-      if (model.getChildVertices(model.root.children[ 0 ]).length === 0) {
-        mxLog.writeln(`ERROR: Could not deploy.`);
-        mxLog.writeln(`The Graph "${that.$store.getters.getGraphName}" is empty.`);
-        return
-      }
       let node = enc.encode(model);
       let store = that.$store;
       this.eb = store.getters.getEb;
-      //let headers = { cmd: "deploy", name: model.getCell(0).name, uid: model.getCell(0).uid};
-      let headers = { cmd: "deploy", name: store.getters.getGraphName, uid: store.getters.getGraphId };
-      /*this.eb.send('mx.vx', mxUtils.getXml(node), headers, (err, res) => {
-        if (err == null) {
-          editor.setGraph(res.body, res.headers.graph_id, res.headers.graph_name, res.headers.active);
-          store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
-          //store.dispatch("setGraphStatus", "deployed");
-        } else {
-          mxLog.warn("There is some error in deploying graph!");
-          console.dir(err);
-        }
-      });*/
-      this.eb.send('mx.vx', "deploy", headers, (err, res) => {
-        if (err == null) {
-          let cnf = res.body;
-          let g = mxUtils.getXml(node);
-          multiChunksMessageDelivery(res, g, cnf);
-          //console.log("uncompressed length: " + g.length);
-        } else {
-          console.dir(err);
-        }
-      });
+      const gzip = pako.gzip(JSON.stringify({
+        cmd: "deploy",
+        uid: store.getters.getGraphId,
+        name: store.getters.getGraphName,
+        graph: mxUtils.getXml(node),
+        zip: false
+      }));
+      run().catch(err => console.log(err));
+
+      async function run() {
+        // Post the form, just make sure to set the 'Content-Type' header
+        const res = await that.$http.post('stt/form', gzip, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Encoding': 'gzip'
+          }
+        });
+        console.log(res.data);
+      }
     });
 
     this.editor.addAction('redeploy', function(editor, cell) {
+
       let enc = new mxCodec(mxUtils.createXmlDocument());
       let model = editor.graph.getModel();
       if (model.getChildVertices(model.root.children[ 0 ]).length === 0) {
@@ -143,27 +139,26 @@ export default {
       let node = enc.encode(model);
       let store = that.$store;
       this.eb = store.getters.getEb;
-      let headers = { cmd: "redeploy", name: store.getters.getGraphName, uid: store.getters.getGraphId };
-      /*this.eb.send('mx.vx', mxUtils.getXml(node), headers, (err, res) => {
-        if (err == null) {
-          editor.setGraph(res.body, res.headers.graph_id, res.headers.graph_name, res.headers.active);
-          store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
-        } else {
-          store.dispatch("setGraphStatus", "undeployed");
-          mxLog.warn("There is some error in redeploying graph!");
-          console.dir(err);
-        }
-      });*/
-      this.eb.send('mx.vx', "redeploy", headers, (err, res) => {
-        if (err == null) {
-          let cnf = res.body;
-          let g = mxUtils.getXml(node);
-          multiChunksMessageDelivery(res, g, cnf);
-          //console.log("uncompressed length: " + g.length);
-        } else {
-          console.dir(err);
-        }
-      });
+      const gzip = pako.gzip(JSON.stringify({
+        cmd: "redeploy",
+        uid: store.getters.getGraphId,
+        name: store.getters.getGraphName,
+        //graph: LZString.compressToUTF16(mxUtils.getXml(node)),
+        graph: mxUtils.getXml(node),
+        zip: false
+      }));
+      run().catch(err => console.log(err));
+
+      async function run() {
+        // Post the form, just make sure to set the 'Content-Type' header
+        const res = await that.$http.post('stt/form', gzip, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Encoding': 'gzip'
+          }
+        });
+        console.log(res.data);
+      }
     });
 
     this.editor.addAction('undeploy', function(editor, cell) {
@@ -181,168 +176,54 @@ export default {
       });
     });
 
-    /*this.editor.addAction('redeploy', function(editor, cell) {
-      let enc = new mxCodec(mxUtils.createXmlDocument());
-      let model = editor.graph.getModel();
-      let node = enc.encode(model);
+    this.editor.addAction('view', function(editor, cell, graphId) {
       let store = that.$store;
-      this.eb = store.getters.getEb;
-      let headers = { cmd: "redeploy", name: store.getters.getGraphName, uid: store.getters.getGraphId };
-      /!*this.eb.send('test01', "get multi-chunk xml graph", headers, (err, res) => {
-        if (err == null) {
-          let g = mxUtils.getXml(node);
-          console.log("Xml graph length: " + g.length);
-          let coms = chunkSubstr(g, 200000);
-          console.log("1-chunks size: " + coms.length);
-          multipartStringMessage(res, coms, 0);
-          //let zip = new JSZip();
-          //let blob = new Blob([mxUtils.getXml(node)], { type: 'application/xml;charset=utf-8;' });
-          //zip.file(store.getters.getGraphName, mxUtils.getXml(node));
-          //zip.file('a', 'bc');
-          /!*zip.generateAsync({type: "string", compression: "DEFLATE"})
-              .then(function(content) {
-                //multipartStringMessage(res, chunkSubstr(content, 200000), 0);
-                multipartStringMessage(res, [content], 0);
-              });*!/
-        } else {
-          console.dir(err);
+      let headers = {};
+      that.$http({
+        method: 'post',
+        url: 'stt/form',
+        //headers: headers,
+        data: {
+          cmd: "view",
+          uid: graphId
         }
+      }).then(function(response) {
+        editor.setGraph(response.data.graph, response.data.uid, response.data.graphName, response.data.active);
+        store.dispatch("setThroughputEnable", false);
+      }).catch(function(error) {
+        console.dir(error);
       });
-      this.eb.send('test02', "get multi-chunk xml graph", headers, (err, res) => {
-        if (err == null) {
-          let g = mxUtils.getXml(node);
-          console.log("uncompressed length: " + g.length);
-          let compressed = LZString.compressToUTF16(g);
-          console.log("compression length: " + compressed.length);
-          let coms = chunkSubstr(compressed, 25000);
-          console.log("2-chunks size: " + coms.length);
-          multipartStringMessage(res, coms, 0);
-          //let zip = new JSZip();
-          //let blob = new Blob([mxUtils.getXml(node)], { type: 'application/xml;charset=utf-8;' });
-          //zip.file(store.getters.getGraphName, mxUtils.getXml(node));
-          //zip.file('a', 'bc');
-          /!*zip.generateAsync({type: "string", compression: "DEFLATE"})
-              .then(function(content) {
-                //multipartStringMessage(res, chunkSubstr(content, 200000), 0);
-                multipartStringMessage(res, [content], 0);
-              });*!/
-        } else {
-          console.dir(err);
-        }
-      });*!/
-      this.eb.send('test03', "redeploy", headers, (err, res) => {
-        if (err == null) {
-          let cnf = res.body;
-          let g = mxUtils.getXml(node);
-          multiChunksMessageDelivery(res, g, cnf);
-          console.log("uncompressed length: " + g.length);
-        } else {
-          console.dir(err);
-        }
-      });
-    });*/
+    })
 
-    let multiChunksMessageDelivery = function(msg, str, cnf) {
-      let chunkSubstr = function(str, size) {
-        const numChunks = Math.ceil(str.length / size)
-        const chunks = new Array(numChunks)
-        for (let i = 0, o = 0; i < numChunks; ++i, o += size) {
-          chunks[ i ] = str.substr(o, size)
-        }
-        return chunks
-      };
-      let multipartStringMessage = function(res, chunks, i) {
-        res.reply(chunks[ i ], { parts: chunks.length, part: i + 1 }, (err, res) => {
-          if (err == null) {
-            if (chunks.length > i + 1) {
-              multipartStringMessage(res, chunks, i + 1);
-            } else {
-              //console.log("partCount: " + i);
-              //All chunks sent successfully!
-              //console.dir(res.body);
-              //that.editor.setGraph(res.body, res.headers.graph_id, res.headers.graph_name, res.headers.active);
-              //that.store.dispatch("setGraphStatus", res.headers.active ? 'deployed' : 'undeployed');
-            }
-          } else {
-            //store.dispatch("setGraphStatus", "undeployed");
-            mxLog.warn("There is some error in sending graph!");
-            console.dir(err);
-          }
-        })
-      }
-      let chunks = chunkSubstr(cnf.compression ? LZString.compressToUTF16(str) : str, cnf[ "chunkLength" ]);
-      multipartStringMessage(msg, chunks, 0);
-    }
-
-    this.editor.addAction('get_graph', function(editor, cell, graphId) {
-      let enc = new mxCodec(mxUtils.createXmlDocument());
-      let model = editor.graph.getModel();
-      let node;
-      try {
-        node = enc.encode(model);
-      } catch (e) {
-        console.dir(e);
-        return;
-      }
-      let store = that.$store;
-      this.eb = store.getters.getEb;
-      let headers = { cmd: "get_graph", uid: graphId };
-      //this.eb.send('mx.vx', mxUtils.getXml(node), headers, (err, res) => {
-      this.eb.send('mx.vx', "get the graph", headers, (err, res) => {
-        if (err == null) {
-          let strGraph = "";
-          getMultiChunkMessage(res, strGraph);
-        } else {
-          mxLog.warn("There is some error in getting graph!");
-          console.dir(err);
-        }
-      });
-      let getMultiChunkMessage = function(res, strGraph) {
-        strGraph += res.body;
-        if (res.headers[ 'parts' ] && res.headers[ 'part' ] && res.headers[ 'parts' ] === res.headers[ 'part' ]) {
-          editor.setGraph(LZString.decompressFromUTF16(strGraph), res.headers.graph_id, res.headers.graph_name, res.headers.active);
-          store.dispatch("setThroughputEnable", false);
-        } else {
-          res.reply('Next part, Please.', (err, res) => {
-            if (err == null) {
-              getMultiChunkMessage(res, strGraph);
-            } else {
-              mxLog.warn("There is some error in getting graph!");
-              console.dir(err);
-            }
-          });
-        }
-      }
-    });
     document.body.onclick = function() {
       that.open = false;
     };
-    /* let splitBtn = this.$refs.x-split-button;
 
-     this.$refs.button.x-button-drop.on('click', function() {
-       if (!splitBtn.hasClass('open'))
-         splitBtn.addClass('open');
-     });
-
-     $('.x-split-button').click(function(event){
-       event.stopPropagation();
-     });
-
-     $('html').on('click',function() {
-       if (splitBtn.hasClass('open'))
-         splitBtn.removeClass('open');
-     });*/
     this.$store.dispatch("setEb");
   },
   methods: {
+    confirm($event) {
+      this.confirmAlert = false;
+      console.dir($event);
+      if ($event === 'undeploy')
+        this.editor.execute("undeploy");
+      else if ($event === 'redeploy')
+        this.editor.execute("redeploy");
+    },
     deploy() {
+      //this.action = 'deploy';
+      //this.confirmAlert = true;
       this.editor.execute("deploy");
     },
     undeploy() {
-      this.editor.execute("undeploy");
+      this.action = 'undeploy';
+      this.confirmAlert = true;
+      //this.editor.execute("undeploy");
     },
     redeploy() {
-      this.editor.execute("redeploy");
+      this.action = 'redeploy';
+      this.confirmAlert = true;
+      //this.editor.execute("redeploy");
     },
     newGraph() {
       this.$store.dispatch("createNewGraph", "NewGraph");
@@ -361,7 +242,6 @@ export default {
       //encoder.exclude.push('vueComponent').push('data').push('dataset');
       return encoder.decode(this.editor.graph.getModel());//jsonModel
     },
-
     prettyXmlModel() {
       let enc = new mxCodec(mxUtils.createXmlDocument());
       let node = enc.encode(this.editor.graph.getModel());
@@ -391,6 +271,15 @@ export default {
 
   },
   computed: {
+    isDeployEnable: function() {
+      return this.$store.getters.getConnected && ( this.$store.getters.getGraphStatus === null || this.$store.getters.getGraphStatus === 'undeployed' )
+    },
+    isRedeployEnable: function() {
+      return this.$store.getters.getConnected && ( this.$store.getters.getGraphStatus === 'deployed' )
+    },
+    isUndeployEnable: function() {
+      return this.$store.getters.getConnected && ( this.$store.getters.getGraphStatus === 'deployed' )
+    },
     getConnectionState: function() {
       if (!this.$store.getters.getEb)
         return "closed";

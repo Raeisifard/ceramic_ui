@@ -10,12 +10,12 @@ function Config() {
 }
 
 function Setting() {
-  this.Array = [1, 2, 3];
+  /*this.Array = [1, 2, 3];
   this.Boolean = true;
   this.Null=null;
   this.Number=123;
   this.Object={"a":"b","c":"d"};
-  this.String = "Hello World";
+  this.String = "Hello World";*/
 }
 
 function JsonObject() {

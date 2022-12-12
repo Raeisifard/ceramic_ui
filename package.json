@@ -21,6 +21,7 @@
     "material-design-icons-iconfont": "^4.0.5",
     "mxgraph": "^3.9.12",
     "npm": "^6.13.0",
+    "pako": "^2.1.0",
     "prismjs": "^1.23.0",
     "tinymce": "^5.7.0",
     "vanilla-picker": "^2.10.1",

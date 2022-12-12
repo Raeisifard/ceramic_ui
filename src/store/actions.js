@@ -1,7 +1,10 @@
 import EB from "vertx3-eventbus-client";
 import { EventBus } from "../event-bus";
 import { CONNECTION_STATUS } from "./constants.js";
+//import LZString from "lz-string";
+import axios from 'axios'
 
+const pako = require('pako');
 let myHandler = null;
 
 let chunkSubstr = function(str, size) {
@@ -147,6 +150,29 @@ export default {
       } else {
         mxLog.warn(JSON.stringify(err));
       }
+    });
+  },
+  post: (context, msg) => {
+    axios({
+      method: 'post',
+      url: 'stt/form',
+      headers: {
+        ...msg.headers,
+        'Content-Type': 'application/json',
+        'Content-Encoding': 'gzip'
+      },
+      data: pako.gzip(JSON.stringify({
+        cmd: msg.headers.cmd,
+        uid: msg.headers.uid,
+        name: msg.headers.name,
+        graph: msg.body,
+        //graph: LZString.compressToUTF16(msg.body),
+        zip: false
+      }))
+    }).then(function(response) {
+      mxLog.writeln(`${response.status} ${response.statusText} GraphId = ${response.data.uid.toUpperCase()}  GraphName = ${response.data.name}`);
+    }).catch(function(error) {
+      mxLog.warn(JSON.stringify(error));
     });
   },
   setGraphId: (context, graphId) => {

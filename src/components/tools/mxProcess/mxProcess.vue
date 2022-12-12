@@ -164,8 +164,18 @@ export default {
 
     graph.convertValueToString = function(cell) {
       if (this.model.isVertex(cell) && cell.getType() === that.jsonObject.type) {
+        let overlays = graph.getCellOverlays(cell);
+        if (overlays == null && 'enable' in cell.getData().config && !cell.getData().config.enable) {
+          // Creates a new overlay with an image and a tooltip
+          let overlay = new mxCellOverlay(
+              new mxImage('editors/images/overlays/disabled.png', 16, 16),
+              'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP);
+          graph.addCellOverlay(cell, overlay);
+        }
         if (this.isCellCollapsed(cell))
-          return `<h2>${cell.getData().fName}</h2>`;
+          return ( cell.getData().config.style && cell.getData().config.style === 'minimal' )
+              ? cell.getValue().label
+              : `<h2>${cell.getData().fName}</h2>`;
         else if (typeof cell.getValue() === 'object' && cell.getValue().label && cell.getValue().label.length > 0)//We have label here.
           return cell.getValue().label;
         else if (( cell.getData().config.chart && cell.getData().config.chart.type )
@@ -186,6 +196,8 @@ export default {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() == 'process') {
         that.cell = cell;
+        let enable = !( 'enable' in cell.getData().config ) || cell.getData().config.enable;
+        let enablePng = enable ? 'editors/images/disable.png' : 'editors/images/enable.png';
         menu.addItem('Config', 'editors/images/config.png', function() {
           that.openConfig(menu, cell, evt, that);
         });
@@ -195,6 +207,29 @@ export default {
         menu.addSeparator();
         menu.addItem('Editor', 'editors/images/edit.png', function() {
           that.openEditor(menu, cell, evt, that);
+        });
+        menu.addItem(enable ? 'Disable' : 'Enable', enablePng, function() {
+          cell.getData().config.enable = !enable;
+          if (cell.getData().config.enable)
+            graph.removeCellOverlays(cell);
+          else {
+            let overlays = graph.getCellOverlays(cell);
+            if (overlays == null) {
+              // Creates a new overlay with an image and a tooltip
+              let overlay = new mxCellOverlay(
+                  new mxImage('editors/images/overlays/disabled.png', 16, 16),
+                  'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP);
+
+              // Installs a handler for clicks on the overlay
+              /*overlay.addListener(mxEvent.CLICK, function(sender, evt2)
+              {
+                mxUtils.alert('This tool is Disabled');
+              });*/
+
+              // Sets the overlay for the cell in the graph
+              graph.addCellOverlay(cell, overlay);
+            }
+          }
         });
         /* let submenu1 = menu.addItem('Submenu 1', null, null);
 

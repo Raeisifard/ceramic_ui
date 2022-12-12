@@ -146,7 +146,7 @@
       },
       getGraph(graphId) {
         this.wnd.destroy();
-        this.editor.execute("get_graph", null, graphId);
+        this.editor.execute("view", null, graphId);
       },
     },
     mounted() {

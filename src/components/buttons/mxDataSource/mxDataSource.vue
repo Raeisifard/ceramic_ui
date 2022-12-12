@@ -17,11 +17,11 @@
               @click="nameCancel($refs.dataSourceName.getElementsByTagName('input')[0])">Cancel</button>
     </div>
   </div>
-  <div ref="dataSourceForm">
-    <div ref="jsoneditor" style="height: 265px; margin: 2px 2px 0 0;">
+  <div ref="dataSourceForm" style="display: flex; flex-direction: column;">
+    <div ref="jsoneditor" style="margin: 2px 2px 0 0;" :style="{height: height}">
 
     </div>
-    <div style="display: flex;justify-content: space-around;">
+    <div style="display: flex;justify-content: space-around;padding-bottom: 5px;">
       <button class="button-dark" style="color: mediumspringgreen;" @click="formOk">OK</button>
       <button class="button-dark" style="color: gold;" @click="formCancel">Cancel</button>
       <button class="button-dark" style="color: tomato;" @click="formDelete">Delete</button>
@@ -43,6 +43,7 @@ export default {
   },
   data: function() {
     return {
+      height: '260px',
       nameType: "Free Type",
       dataSourceTypes: dataSourceTypes,
       editor: this.$store.getters.getEditor,
@@ -67,61 +68,83 @@ export default {
       return background;
     },
     nameOk: function(event) {
+      let that = this;
       if (event) {
         if (typeof event === 'string')
-          this.name = event.trim();
+          that.name = event.trim();
         else {
-          this.name = event.value.trim();
+          that.name = event.value.trim();
           event.value = "";
         }
-        if (this.name.length < 1)
+        if (that.name.length < 1)
           alert("Please, Enter a valid name.");
         else {
-          if (this.wndName)
-            this.wndName.hide();
-          let root = this.editor.graph.getModel().root;
+          if (that.wndName)
+            that.wndName.hide();
+          let root = that.editor.graph.getModel().root;
           let dataSources = JSON.parse(root.getData()) || {};
           let dataSource = null;
-          if (dataSources[ this.name ]) {
-            dataSource = dataSources[ this.name ]
+          if (dataSources[ that.name ]) {
+            dataSource = dataSources[ that.name ]
           } else {
-            dataSource = this.dataSourceTypes[ this.nameType ];
-            this.nameType = "Free Type";
+            dataSource = that.dataSourceTypes[ that.nameType ];
+            that.nameType = "Free Type";
           }
-          if (this.wndForm === null) {
+          if (that.wndForm === null) {
             let width = 500;
             let height = 320;
             let x = Math.max(0, document.body.scrollWidth / 2 - width / 2);
             let y = Math.max(10, ( document.body.scrollHeight ||
                 document.documentElement.scrollHeight ) / 2 - height * 2 / 3);
-            this.wndForm = new mxWindow(`Create Data Source (${this.name})`, this.$refs[ 'dataSourceForm' ], x, y, width, height, false, true);
+            that.wndForm = new mxWindow(`Data Source Editor (${that.name})`, that.$refs[ 'dataSourceForm' ], x, y, width, height, false, true);
+            that.wndForm.addListener(mxEvent.RESIZE, function(evt) {
+              that.height = ( evt.div.offsetHeight - 60 ) + 'px';
+            });
+            that.wndForm.setResizable(true);
+            //that.wndForm.setClosable(true);
+            that.wndForm.minimumSize = new mxRectangle(0, 0, 460, 200);
+            that.wndForm.addListener(mxEvent.CLOSE, function(evt) {
+              that.editor.graph.setEnabled(true);
+              mxEffects.fadeOut(that.background, 50, true, 10, 30, true);
+              that.wndForm = null;
+            });
+          } else {
+            let title = that.wndForm.title.textContent;
+            that.wndForm.title.textContent = title.replace(title.substring(title.indexOf('(') + 1, title.indexOf(')')), that.name);
           }
-          this.jsonEditor.set(dataSource);
-          this.wndForm.setVisible(true);
+          that.jsonEditor.set(dataSource);
+          that.wndForm.setClosable(true);
+          that.wndForm.destroyOnClose = false;
+          that.wndForm.setVisible(true);
+          that.wndForm.table.nextSibling.style.right = '2px'
+          that.wndForm.div.style.overflow = 'visible';
+          that.wndForm.content.parentElement.style.overflow = 'unset';
         }
       }
     },
     nameCancel: function(event) {
+      let that = this;
       if (event) {
         event.value = "";
       }
-      this.nameType = "Free Type";
-      this.wndName.hide();
-      this.editor.graph.setEnabled(true);
-      mxEffects.fadeOut(this.background, 50, true,
+      that.nameType = "Free Type";
+      that.wndName.hide();
+      that.editor.graph.setEnabled(true);
+      mxEffects.fadeOut(that.background, 50, true,
           10, 30, true);
     },
     formOk: function() {
-      let dataSource = this.jsonEditor.get();
-      this.jsonEditor.set({});
-      this.jsonEditor.setMode('tree');
-      let root = this.editor.graph.getModel().root;
+      let that = this;
+      let dataSource = that.jsonEditor.get();
+      that.jsonEditor.set({});
+      that.jsonEditor.setMode('tree');
+      let root = that.editor.graph.getModel().root;
       let data = JSON.parse(root.data) || {};
-      data[ this.name ] = dataSource;
+      data[ that.name ] = dataSource;
       root.setData(JSON.stringify({ ...data }));
-      this.wndForm.hide();
-      mxEffects.fadeOut(this.background, 50, true, 10, 30, true);
-      this.editor.graph.setEnabled(true);
+      that.wndForm.hide();
+      mxEffects.fadeOut(that.background, 50, true, 10, 30, true);
+      that.editor.graph.setEnabled(true);
     },
     formCancel: function() {
       this.jsonEditor.set({});
@@ -173,7 +196,7 @@ export default {
       if (name)
         that.nameOk(name);
       else
-        that.showModalWindow(graph, 'Enter an valid Name.', that.$refs[ 'dataSourceName' ], 410, 110, name);//that.$refs.exportForm.$el.firstElementChild
+        that.showModalWindow(graph, 'Enter a valid Name.', that.$refs[ 'dataSourceName' ], 410, 110, name);//that.$refs.exportForm.$el.firstElementChild
     });
   }
 }

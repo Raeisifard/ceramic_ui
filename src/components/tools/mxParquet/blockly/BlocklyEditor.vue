@@ -43,6 +43,18 @@ export default {
         trashcan: true,
         toolbox:
             `<xml>
+          <category name="SQL" colour="45">
+            <block type="sql_freemarker_text"></block>
+            <block type="sql_freemarker_space"></block>
+            <block type="sql_interpolate_statement"></block>
+            <block type="sql_freemarker_interpolate"></block>
+            <block type="sql_freemarker_has_content"></block>
+            <block type="sql_freemarker_if_exists"></block>
+            <block type="sql_freemarker_else"></block>
+            <block type="sql_freemarker_concat"></block>
+            <block type="sql_freemarker_linefeed"></block>
+            <block type="sql_freemarker_enter"></block>
+          </category>
           <category name="Pattern" colour="60">
             <block type="pattern_freemarker_text"></block>
             <block type="pattern_freemarker_space"></block>

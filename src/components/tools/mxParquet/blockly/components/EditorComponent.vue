@@ -66,6 +66,7 @@
 <script>
 import Blockly from 'blockly';
 import '../blocks/pattern';
+import '../blocks/sql';
 
 export default {
   name: 'EditorComponent',

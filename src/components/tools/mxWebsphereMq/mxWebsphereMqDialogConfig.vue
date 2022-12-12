@@ -128,14 +128,14 @@ export default {
           config = {...dataSource };
         }
       }
-      config.port = this.port || this.config.port || 1414;
-      config.qm = this.qm || this.config.qm || 'TestQueue';
-      config.qName = this.qName || this.config.qName || 'my.Queue.Manager';
-      config.user = this.user || this.config.user || 'Username';
-      config.pass = this.pass || this.config.pass || 'Password';
-      config.channelName = this.channelName || this.config.channelName || 'SYSTEM.DEF.SVRCONN';
-      config.instance = this.instance || this.config.instance || 1;
-      config.codepage = this.codepage || this.config.codepage || '1098';
+      config.port = this.port || config.port || 1414;
+      config.qm = this.qm || config.qm || 'TestQueue';
+      config.qName = this.qName || config.qName || 'my.Queue.Manager';
+      config.user = this.user || config.user || 'Username';
+      config.pass = this.pass || config.pass || 'Password';
+      config.channelName = this.channelName || config.channelName || 'SYSTEM.DEF.SVRCONN';
+      config.instance = this.instance || config.instance || 1;
+      config.codepage = this.codepage || config.codepage || '1098';
       this.eb = this.store.getters.getEb;
       let headers = {
         "cmd": "TEST-CONNECTION",

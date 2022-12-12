@@ -9,6 +9,7 @@ import dbLabel from "./dbLabel";
 import { EventBus } from "@/event-bus";
 import mxDatabaseConfig from "./mxDatabaseConfig";
 import mxDatabaseEditor from "./mxDatabaseEditor";
+
 mxCodecRegistry.addAlias(mxUtils.getFunctionName(JsonObject), 'JsonObject');
 export default {
   name: 'mxDatabase',
@@ -114,7 +115,15 @@ export default {
     let graphConvertValueToString = graph.convertValueToString;
     graph.convertValueToString = function(cell) {
       if (this.model.isVertex(cell) && cell.getType() === "database") {
-        if (typeof cell.vueComponent === 'undefined'){
+        let overlays = graph.getCellOverlays(cell);
+        if (overlays == null && 'enable' in cell.getData().config && !cell.getData().config.enable) {
+          // Creates a new overlay with an image and a tooltip
+          let overlay = new mxCellOverlay(
+              new mxImage('editors/images/overlays/disabled.png', 16, 16),
+              'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP);
+          graph.addCellOverlay(cell, overlay);
+        }
+        if (typeof cell.vueComponent === 'undefined') {
           cell.vueComponent = that.$store.getters.getVueComponentByObject(that, cell);
         }
         return cell.vueComponent.$el;
@@ -145,12 +154,37 @@ export default {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() === 'database') {
         that.cell = cell;
+        let enable = !( 'enable' in cell.getData().config ) || cell.getData().config.enable;
+        let enablePng = enable ? 'editors/images/disable.png' : 'editors/images/enable.png';
         menu.addItem('Config', 'editors/images/config.png', function() {
           /*that.openConfig(menu, cell, evt, that);*/
           that.showConfig = true;
         });
         menu.addItem('Query Editor', 'editors/images/editor.png', function() {
           that.showEditor = true;
+        });
+        menu.addItem(enable ? 'Disable' : 'Enable', enablePng, function() {
+          cell.getData().config.enable = !enable;
+          if (cell.getData().config.enable)
+            graph.removeCellOverlays(cell);
+          else {
+            let overlays = graph.getCellOverlays(cell);
+            if (overlays == null) {
+              // Creates a new overlay with an image and a tooltip
+              let overlay = new mxCellOverlay(
+                  new mxImage('editors/images/overlays/disabled.png', 16, 16),
+                  'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP);
+
+              // Installs a handler for clicks on the overlay
+              /*overlay.addListener(mxEvent.CLICK, function(sender, evt2)
+              {
+                mxUtils.alert('This tool is Disabled');
+              });*/
+
+              // Sets the overlay for the cell in the graph
+              graph.addCellOverlay(cell, overlay);
+            }
+          }
         });
       }
     };

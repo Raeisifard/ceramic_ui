@@ -130,9 +130,9 @@ export default {
   mounted() {
     let that = this;
     this.code = this.cell.getData().code;
-    let prettyCode = this.prettifyXml(this.code);
+    let prettyCode = this.prettifyXml(`<xml>${this.code}</xml>`);
     if (!prettyCode.includes('<h3>Below is a rendering of the page up to the first error.</h3>'))
-      this.code = prettyCode;
+      this.code = prettyCode.substring(6, prettyCode.length - 7);
     this.showModalEditorWindow(this.$store.getters.getEditor.graph, "Code Editor", this.$el, 500, 232);
   }
 }

@@ -163,11 +163,27 @@ export default {
     this.$nextTick(function() {
       that.addSidebarIcon(that.graph, that.sidebar, that.label, that.image, that.type);
     });
+    let graphConvertValueToString = that.graph.convertValueToString;
+    that.graph.convertValueToString = function(cell) {
+      if (this.model.isVertex(cell) && cell.getType() === "webspheremq") {
+        let overlays = that.graph.getCellOverlays(cell);
+        if (overlays == null && 'enable' in cell.getData().config && !cell.getData().config.enable) {
+          // Creates a new overlay with an image and a tooltip
+          let overlay = new mxCellOverlay(
+              new mxImage('editors/images/overlays/disabled.png', 16, 16),
+              'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP,new mxPoint(-10, 10),0);
+          that.graph.addCellOverlay(cell, overlay);
+        }
+      }
+      return graphConvertValueToString.apply(this, arguments);
+    };
     // Installs context menu
     let defaultMenu = that.graph.popupMenuHandler.factoryMethod;
     that.graph.popupMenuHandler.factoryMethod = function(menu, cell, evt) {
       defaultMenu(menu, cell, evt);
       if (cell != null && cell.getType() === 'webspheremq') {
+        let enable = !( 'enable' in cell.getData().config ) || cell.getData().config.enable;
+        let enablePng = enable ? 'editors/images/disable.png' : 'editors/images/enable.png';
         menu.addItem('Config', 'editors/images/config.png', function() {
           that.cell = cell;
           let instance = new ComponentClass({
@@ -181,6 +197,29 @@ export default {
           }
           that.showModalConfigWindow(that.graph, "IBM MQ Configuration", instance.$el, 500, 272);
           //that.showModalWindow(graph, 'XML', instance.$el, 410, 440);
+        });
+        menu.addItem(enable ? 'Disable' : 'Enable', enablePng, function() {
+          cell.getData().config.enable = !enable;
+          if (cell.getData().config.enable)
+            that.graph.removeCellOverlays(cell);
+          else {
+            let overlays = that.graph.getCellOverlays(cell);
+            if (overlays == null) {
+              // Creates a new overlay with an image and a tooltip
+              let overlay = new mxCellOverlay(
+                  new mxImage('editors/images/overlays/disabled.png', 16, 16),
+                  'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP,new mxPoint(-10, 10),0);
+
+              // Installs a handler for clicks on the overlay
+              /*overlay.addListener(mxEvent.CLICK, function(sender, evt2)
+              {
+                mxUtils.alert('This tool is Disabled');
+              });*/
+
+              // Sets the overlay for the cell in the graph
+              that.graph.addCellOverlay(cell, overlay);
+            }
+          }
         });
       }
     };

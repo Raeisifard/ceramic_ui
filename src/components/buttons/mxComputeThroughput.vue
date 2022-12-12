@@ -91,11 +91,21 @@ export default {
                   let source_port = edge.source;
                   let source_tool = source_port.getType() ? source_port : source_port.parent;
                   let source_check = difChecks.find(c => c.id === source_tool.id);
-                  let edge_in = source_check.data.ports[ source_port.value.toLowerCase() ];
+                  let edge_in = 0;
+                  try{
+                    edge_in = source_check.data.ports[ source_port.value.toLowerCase() ];
+                  }catch (e) {
+                    edge_in = 0;
+                  }
                   let target_port = model.getTerminal(edge, false);
                   let target_tool = target_port.getType() ? target_port : target_port.parent;
                   let target_check = difChecks.find(c => c.id === target_tool.id);
-                  let edge_out = target_check.data.ports[ target_port.value.toLowerCase() ];
+                  let edge_out = 0;
+                  try {
+                    edge_out = target_check.data.ports[ target_port.value.toLowerCase() ];
+                  }catch (e) {
+                    edge_out = edge_in;
+                  }
                   let incomingEdges = model.getIncomingEdges(target_port);
 
                   let edges_in = incomingEdges.reduce((acc, cv) => {
@@ -103,7 +113,11 @@ export default {
                     let sp = model.getTerminal(cv, true);
                     let st = sp.getType() ? sp : sp.parent;
                     let sc = difChecks.find(c => c.id === st.id);
-                    return acc + sc.data.ports[ sp.value.toLowerCase() ];
+                    try {
+                      return acc + sc.data.ports[ sp.value.toLowerCase() ];
+                    }catch (e) {
+                      return acc;
+                    }
                   }, 0);
                   let percent = Math.round(( edge_out / edges_in ) * 100);
                   edgesMap.set(edge, { out: edge_in, success: percent })
@@ -118,9 +132,9 @@ export default {
               //console.log("all_tps: " + this.all_tps + "  median_tps: " + this.median_tps);
               //console.dir(edgesMap);
               if (this.$store.getters.isThroughputEnable)
-              edgesMap.forEach((v, k) => {
-                this.setEdgeThroughputStyle(k, v, graph);
-              });
+                edgesMap.forEach((v, k) => {
+                  this.setEdgeThroughputStyle(k, v, graph);
+                });
               this.edgesMap = edgesMap;
             });
 
@@ -165,7 +179,7 @@ export default {
       } else {
         that.$store.commit("SET_THROUGHPUT_ENABLE", true);
         let headers = { cmd: "query", name: that.$store.getters.getGraphName, uid: that.$store.getters.getGraphId };
-        this.eb.send('mx.vx', that.$store.getters.getGraphId, headers, (err, res) => {
+        that.$store.getters.getEb.send('mx.vx', that.$store.getters.getGraphId, headers, (err, res) => {
           if (err == null) {
             if (res.body.active) {
               that.throughput();

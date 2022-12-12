@@ -104,6 +104,40 @@ export default {
       this.cell.data.outNumber = this.outNumber;
       // get json
       this.cell.data.config = this.editor.get();
+      //apply if minimal style
+      if (this.cell.data.config.style && this.cell.data.config.style === 'minimal') {
+        this.cell.setStyle("minimal");
+        if (this.cell.isCollapsed())
+          editor.graph.foldCells(false, false, [this.cell]);
+        editor.graph.foldCells(true, false, [this.cell]);
+      } else if (this.cell.getStyle().trim().length > 3) {
+        this.cell.setStyle("");
+        if (!this.cell.isCollapsed())
+          editor.graph.foldCells(true, false, [this.cell]);
+        editor.graph.foldCells(false, false, [this.cell]);
+      }
+      //Enable & Disable Overlay
+      let enable = !( 'enable' in this.cell.getData().config ) || this.cell.getData().config.enable;
+      if (enable)
+        graph.removeCellOverlays(this.cell);
+      else {
+        let overlays = graph.getCellOverlays(this.cell);
+        if (overlays == null) {
+          // Creates a new overlay with an image and a tooltip
+          let overlay = new mxCellOverlay(
+              new mxImage('editors/images/overlays/disabled.png', 16, 16),
+              'Disabled', mxConstants.ALIGN_RIGHT, mxConstants.ALIGN_TOP);
+
+          // Installs a handler for clicks on the overlay
+          /*overlay.addListener(mxEvent.CLICK, function(sender, evt2)
+          {
+            mxUtils.alert('This tool is Disabled');
+          });*/
+
+          // Sets the overlay for the cell in the graph
+          graph.addCellOverlay(this.cell, overlay);
+        }
+      }
       this.wndConfig.destroy();
     },
     getOutNumber() {

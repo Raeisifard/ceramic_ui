@@ -118,7 +118,7 @@ export default {
 
         model.beginUpdate();
         try {
-          let width = 120, height = 120, xOffset = -8, yOffset = 9, portWidth = 16, portHeight = 16,
+          let width = 120, height = 75, xOffset = -8, yOffset = 9, portWidth = 16, portHeight = 16,
               alternateWidth = 120, alternateHeight = 40;
           v1 = graph.insertVertex(parent, null, new JO().config.info, x, y, width, height, type + ';fillColor=rgb(24,255,150,0.65)');
           v1.setConnectable(false);
@@ -142,7 +142,7 @@ export default {
 
         graph.setSelectionCell(v1);
       };
-      let dashStyle = { width: 120, height: 120 };
+      let dashStyle = { width: 120, height: 75 };
       // Creates the image which is used as the sidebar icon (drag source)
       let img = document.createElement('img');
       img.setAttribute('src', image);

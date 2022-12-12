@@ -129,18 +129,19 @@ mxLog.init = function() {
             let graphStatus = window.store.getters.getGraphStatus;
             if (graphStatus === 'deployed' && !( cmdSplit[ 1 ] && cmdSplit[ 1 ].toLowerCase() === '-force' )) {
                 mxLog.warn("Graph is active at the time. Can't save it!")
+            }else {
+              mxLog.writeln(`Saving the graph...`);
+              let enc = new mxCodec(mxUtils.createXmlDocument());
+              let model = window.store.getters.getModel;
+              let node = enc.encode(model);
+              let msg = {};
+              msg.headers = {};
+              msg.headers.cmd = "save";
+              msg.headers.uid = graphId;
+              msg.headers.name = graphName;
+              msg.body = mxUtils.getXml(node);
+              window.store.dispatch("post", msg);
             }
-            mxLog.writeln(`Saving the graph...`);
-            let enc = new mxCodec(mxUtils.createXmlDocument());
-            let model =  window.store.getters.getModel;
-            let node = enc.encode(model);
-            let msg = {};
-            msg.headers = {};
-            msg.headers.cmd = "save";
-            msg.headers.uid = graphId;
-            msg.headers.name = graphName;
-            msg.body = mxUtils.getXml(node);
-            window.store.dispatch("emit", msg);
             break;
           case "rename":
             //let editor = window.store.getters.getEditor;

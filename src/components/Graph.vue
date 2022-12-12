@@ -151,7 +151,17 @@ export default {
       style[ mxConstants.STYLE_FILLCOLOR ] = 'rgba(255,255,255,0)';
       style[ mxConstants.STYLE_STROKECOLOR ] = 'rgba(255,255,255,0)';
       style[ mxConstants.STYLE_FONTCOLOR ] = '#000000';
+      style[ mxConstants.STYLE_RESIZABLE ] = 0;
       graph.getStylesheet().putCellStyle('webspheremq', style);
+
+      style = new Object();
+      style[ mxConstants.STYLE_SHAPE ] = mxConstants.SHAPE_RECTANGLE;
+      style[ mxConstants.STYLE_GRADIENTCOLOR ] = '';
+      style[ mxConstants.STYLE_FILLCOLOR ] = 'rgba(255,255,255,0)';
+      style[ mxConstants.STYLE_STROKECOLOR ] = 'rgba(255,255,255,0)';
+      style[ mxConstants.STYLE_FONTCOLOR ] = '#000000';
+      style[ mxConstants.STYLE_FOLDABLE ] = false;
+      graph.getStylesheet().putCellStyle('minimal', style);
 
     },
     showModalWindow: function(graph, title, content, width, height) {
@@ -567,7 +577,7 @@ export default {
         let node = xmlDocument.documentElement;
         that.$store.dispatch("setGraphId", graph_id);
         that.$store.commit("SET_GRAPH_NAME", graph_name);//Direct commit and Not dispatch it.
-        that.$store.dispatch("setGraphStatus", active === 'true' ? 'deployed' : 'undeployed');
+        that.$store.dispatch("setGraphStatus", active ? 'deployed' : 'undeployed');
         decoder.decode(node, editor.graph.getModel());
         //editor.graph.fit();
         //editor.graph.zoomOut();
@@ -773,8 +783,7 @@ export default {
         return result;
       };
 
-      mxClipboard.paste = function(graph)
-      {
+      mxClipboard.paste = function(graph) {
         if (graph.isEnabled()) {
           let xml = window.localStorage.getItem('ceramic.clipboard');
           if (xml != null && xml.length > 0) {
