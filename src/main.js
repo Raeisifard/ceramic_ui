@@ -6,6 +6,7 @@ import store from './store/store'
 import axios from 'axios'
 
 Vue.prototype.$http = axios;
+console.log(process.env.NODE_ENV);
 /*import Vuetify from 'vuetify'*/
 //import 'vuetify/dist/vuetify.min.css'
 /*Vue.use(Vuetify);*/
@@ -18,7 +19,10 @@ import { EventBus } from './event-bus.js';
 if (window.fetch) {
   fetch('./config.json')
     .then(response => response.json())
-    .then(obj => store.dispatch("setConfig", obj));
+    .then(obj => {
+      store.dispatch("setConfig", obj);
+      store.dispatch("setEb");
+    });
 } else {
   console.log("Your browser doesn't support \"fetch\"! Try using \"XMLHttpRequest\"...");
   store.dispatch("setConfig", null);

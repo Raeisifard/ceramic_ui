@@ -2,7 +2,7 @@
     <!-- Creates a container for the sidebar -->
     <div id="statusContainer">
         <div style="height: 100%;">
-            <img src="/editors/images/ceramic.png" style="height: 100%;">
+            <img src="/src/images/icons48/process.png" style="height: 100%;">
         </div>
         <div style="height: 100%;">
             <img src="/editors/images/ceramic-icon.png" style="height: 100%;">

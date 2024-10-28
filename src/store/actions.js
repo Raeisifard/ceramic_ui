@@ -3,10 +3,11 @@ import { EventBus } from "../event-bus";
 import { CONNECTION_STATUS } from "./constants.js";
 //import LZString from "lz-string";
 import axios from 'axios'
+//import { devServer as location } from "../../vue.config";
 
 const pako = require('pako');
 let myHandler = null;
-
+const hostName = window.location.hostname;
 let chunkSubstr = function(str, size) {
   const numChunks = Math.ceil(str.length / size)
   const chunks = new Array(numChunks)
@@ -15,7 +16,10 @@ let chunkSubstr = function(str, size) {
   }
   return chunks
 };
-
+let setHostAddress = function(config) {
+  config["vertxbus"].BusAddress = hostName + ":" + config["vertxbus"].BusAddress.split(":")[1];
+  return config;
+};
 export default {
   checkVersion: (context, version) => {
     //TODO check version number with state-version and return true if the version is compatible.
@@ -37,10 +41,12 @@ export default {
     if (config == null) {
       mxUtils.get('./config.json', function(req) {
         let config = JSON.parse(req.request.responseText);
+        config = setHostAddress(config);
         context.commit("SET_CONFIG", config);
         context.commit("SET_EDITOR_CONFIG", config.editor);
       });
     } else {
+      config = setHostAddress(config);
       context.commit("SET_CONFIG", config);
       context.commit("SET_EDITOR_CONFIG", config.editor);
     }
@@ -54,79 +60,81 @@ export default {
   },
   setEb: (context) => {
     let ctx = context;
-    mxUtils.get('./config.json', function(req) {
-      let config = JSON.parse(req.request.responseText);
-      let options = {
-        vertxbus_reconnect_attempts_max: config.vertxbus.reconnect.attemts_max || Infinity, // Max reconnect attempts
-        vertxbus_reconnect_delay_min: config.vertxbus.reconnect.delay_min || 1000, // Initial delay (in ms) before first reconnect attempt
-        vertxbus_reconnect_delay_max: config.vertxbus.reconnect.delay_max || 5000, // Max delay (in ms) between reconnect attempts
-        vertxbus_reconnect_exponent: config.vertxbus.reconnect.exponent || 2, // Exponential backoff factor
-        vertxbus_randomization_factor: config.vertxbus.randomization_factor || 0.5 // Randomization factor between 0 and 1
+    //mxUtils.get('./config.json', function(req) {
+    //let config = JSON.parse(req.request.responseText);
+    let config = context.getters.getConfig;
+    let options = {
+      vertxbus_reconnect_attempts_max: config.vertxbus.reconnect.attemts_max || Infinity, // Max reconnect attempts
+      vertxbus_reconnect_delay_min: config.vertxbus.reconnect.delay_min || 1000, // Initial delay (in ms) before first reconnect attempt
+      vertxbus_reconnect_delay_max: config.vertxbus.reconnect.delay_max || 5000, // Max delay (in ms) between reconnect attempts
+      vertxbus_reconnect_exponent: config.vertxbus.reconnect.exponent || 2, // Exponential backoff factor
+      vertxbus_randomization_factor: config.vertxbus.randomization_factor || 0.5 // Randomization factor between 0 and 1
+    };
+    try {
+      let eb = new EB(`http://${config.vertxbus.BusAddress}/eventbus`, options);
+      eb.enableReconnect(config.vertxbus.enableReconnect);
+      eb.enablePing = function(enable) {
+        eb.sockJSConn.send(JSON.stringify({ type: 'ping' }));
       };
-      try {
-        let eb = new EB(config.vertxbus.BusAddress, options);
-        eb.enableReconnect(config.vertxbus.enableReconnect);
-        eb.enablePing = function(enable) {
-          eb.sockJSConn.send(JSON.stringify({ type: 'ping' }));
-        };
-        eb.onopen = function() {
-          console.log("EB on open handler called.")
-          ctx.dispatch("setConnected", true);
-          // set a handler to receive a message
-          eb.registerHandler('vx.mx', function(error, message) {
-            if (error) {
-              //EventBus.$emit('error', message);
-              mxLog.warn("Vue EventBus got error on message handler:");
-              console.dir(error);
-            } else {
-              let headers = message.headers;
-              if (typeof message.body === 'object' && message.body.type && message.body.type === 'sync') {
-                eb.enablePing(true);
-                return;
-              } else if (headers.cmd && headers.cmd === 'status' && headers[ "graph_id" ].toLowerCase() === context.getters.getGraphId) {
-                switch (message.body) {
-                  case "DEPLOYED":
-                    let editor = context.state.editor;
-                    editor.setGraph(mxUtils.getXml(new mxCodec(mxUtils.createXmlDocument()).encode(editor.graph.getModel())),
-                      headers.graph_id, headers.graph_name, headers.active);
-                    break;
-                  //case "REDEPLOYED": Consists of one "Undeploy" followed by an explicit "Deploy".
-                  case "DEPLOY FAILED":
-                    context.dispatch("setGraphStatus", headers.active === 'true' ? 'deployed' : 'undeployed');
-                    break;
-                  case "UNDEPLOYED":
-                    context.dispatch("setGraphStatus", 'undeployed');
-                    break;
-                }
+      eb.onopen = function() {
+        console.log("EB on open handler called.")
+        ctx.dispatch("setConnected", true);
+        // set a handler to receive a message
+        eb.registerHandler('vx.mx', function(error, message) {
+          if (error) {
+            //EventBus.$emit('error', message);
+            mxLog.warn("Vue EventBus got error on message handler:");
+            console.dir(error);
+          } else {
+            let headers = message.headers;
+            if (typeof message.body === 'object' && message.body.type && message.body.type === 'sync') {
+              eb.enablePing(true);
+              return;
+            } else if (headers.cmd && headers.cmd === 'status' && headers[ "graph_id" ].toLowerCase() === context.getters.getGraphId) {
+              switch (message.body) {
+                case "DEPLOYED":
+                  let editor = context.state.editor;
+                  editor.setGraph(mxUtils.getXml(new mxCodec(mxUtils.createXmlDocument()).encode(editor.graph.getModel())),
+                    headers.graph_id, headers.graph_name, headers.active);
+                  break;
+                //case "REDEPLOYED": Consists of one "Undeploy" followed by an explicit "Deploy".
+                case "DEPLOY FAILED":
+                  context.dispatch("setGraphStatus", headers.active === 'true' ? 'deployed' : 'undeployed');
+                  break;
+                case "UNDEPLOYED":
+                  context.dispatch("setGraphStatus", 'undeployed');
+                  break;
               }
-              let unit = headers.unit;//.e.g process.7 switch.2 ...
-              //EventBus.$emit(unit, message);
             }
-          });
-          let id = ctx.getters.getGraphId;
-          try {//Unregister previous uid listener if any.
-            eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
-            console.log("EB unregister handler");
-            eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
-            console.log("EB register handler");
-          } catch (e) {
-            console.dir(e);
+            let unit = headers.unit;//.e.g process.7 switch.2 ...
+            //EventBus.$emit(unit, message);
           }
-        };
-        eb.onerror = function(err) {
-          console.log("EB on error handler called.");
-          try {
-            ctx.dispatch("setConnected", false);
-            mxLog.enter(JSON.stringify(err));
-          } catch (e) {
-            // dev tools are disabled so we cannot use console on IE
-          }
-        };
-        context.commit("SET_EB", eb);
-      } catch (e) {
-        //mxLog.debug(e);
-      }
-    });
+        });
+        let id = ctx.getters.getGraphId;
+        try {//Unregister previous uid listener if any.
+          eb.unregisterHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+          console.log("EB unregister handler");
+          eb.registerHandler(`vx.mx.${id}`.toLowerCase(), myHandler);
+          console.log("EB register handler");
+        } catch (e) {
+          console.dir(e);
+        }
+      };
+      eb.onerror = function(err) {
+        console.log("EB on error handler called.");
+        try {
+          ctx.dispatch("setConnected", false);
+          mxLog.enter(JSON.stringify(err));
+        } catch (e) {
+          // dev tools are disabled so we cannot use console on IE
+        }
+      };
+      context.commit("SET_EB", eb);
+    } catch (e) {
+      //mxLog.debug(e);
+      debugger;
+    }
+    //});
   },
 
   setConnected: (context, connected) => {
@@ -155,7 +163,7 @@ export default {
   post: (context, msg) => {
     axios({
       method: 'post',
-      url: 'stt/form',
+      url: `http://${context.getters.getConfig.vertxbus.BusAddress}/stt/form`,
       headers: {
         ...msg.headers,
         'Content-Type': 'application/json',
@@ -185,15 +193,17 @@ export default {
             let cell = this.getters.getModel.getCell(id);
             cell.setValue(message.body);
             let state = this.getters.getGraph.view.getState(cell);
+            let style = mxUtils.clone(state.style);
             if (message.headers.fillColor) {
-              state.style[ mxConstants.STYLE_FILLCOLOR ] = message.headers.fillColor;
+              style[ mxConstants.STYLE_FILLCOLOR ] = message.headers.fillColor;
             }
             if (message.headers.opacity) {
-              state.style[ mxConstants.STYLE_OPACITY ] = message.headers.opacity;
+              style[ mxConstants.STYLE_OPACITY ] = message.headers.opacity;
             }
             if (message.headers.gradientColor) {
-              state.style[ mxConstants.STYLE_GRADIENTCOLOR ] = message.headers.gradientColor;
+              style[ mxConstants.STYLE_GRADIENTCOLOR ] = message.headers.gradientColor;
             }
+            state.style = style;
             state.shape.apply(state);
 
             mxCellRenderer.prototype.redrawLabel(state, true);
@@ -206,6 +216,8 @@ export default {
             if (cell.vueComponent)
               cell.vueComponent.$children[ 0 ].alertData(message.body);
             let state = this.getters.getGraph.view.getState(cell);
+            if (typeof state === 'undefined')
+              return;
             state.shape.apply(state);
             mxCellRenderer.prototype.redrawLabel(state, true);
           }

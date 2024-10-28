@@ -464,6 +464,8 @@ export default {
         ${cell.getData().setting._.period}-${cell.getData().setting._.delay}`;
       else if (cell.getType() === "info")
         return defaultGetTooltipForCell(cell);
+      else if (cell.isVertex() && cell.isConnectable())
+        return `${cell.getValue()}`
       else
         return `#${cell.getId()}`;
     }

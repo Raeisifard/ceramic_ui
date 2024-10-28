@@ -1,7 +1,7 @@
 {
   "about": {
     "name": "Ceramic",
-    "version": "2.2.0",
+    "version": "2.3.0",
     "license": "Apache2"
   },
   "editor": {
@@ -9,7 +9,7 @@
     "side_bar": true
   },
   "vertxbus": {
-    "BusAddress": "http://localhost:8090/eventbus",
+    "BusAddress": "192.168.160.133:8090",
     "enableReconnect": true,
     "reconnect": {
       "attemts_max": "Infinity",

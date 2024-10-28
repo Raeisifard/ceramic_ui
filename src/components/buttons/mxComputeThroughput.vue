@@ -75,7 +75,7 @@ export default {
 //TODO if throughput still is on
       if (this.$store.getters.isThroughputEnable) {
         this.$http
-            .get('/health/status/' + this.$store.getters.getGraphId)
+            .get(`http://${this.$store.getters.getConfig["vertxbus"].BusAddress}/health/status/${this.$store.getters.getGraphId}`)
             .then(response => {
               let checks = response.data.checks;
               //console.dir(checks);
@@ -92,9 +92,9 @@ export default {
                   let source_tool = source_port.getType() ? source_port : source_port.parent;
                   let source_check = difChecks.find(c => c.id === source_tool.id);
                   let edge_in = 0;
-                  try{
+                  try {
                     edge_in = source_check.data.ports[ source_port.value.toLowerCase() ];
-                  }catch (e) {
+                  } catch (e) {
                     edge_in = 0;
                   }
                   let target_port = model.getTerminal(edge, false);
@@ -103,7 +103,7 @@ export default {
                   let edge_out = 0;
                   try {
                     edge_out = target_check.data.ports[ target_port.value.toLowerCase() ];
-                  }catch (e) {
+                  } catch (e) {
                     edge_out = edge_in;
                   }
                   let incomingEdges = model.getIncomingEdges(target_port);
@@ -115,7 +115,7 @@ export default {
                     let sc = difChecks.find(c => c.id === st.id);
                     try {
                       return acc + sc.data.ports[ sp.value.toLowerCase() ];
-                    }catch (e) {
+                    } catch (e) {
                       return acc;
                     }
                   }, 0);

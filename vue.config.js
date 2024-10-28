@@ -10,6 +10,7 @@ module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
     ? './'
     : '/',
+  /*publicPath: '',*/
   configureWebpack: {
     devServer: {
       proxy: 'http://localhost:8090/'

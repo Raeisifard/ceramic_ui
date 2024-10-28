@@ -27,7 +27,7 @@
 </script>
 
 <style scoped>
-    @import url(/src/css/greenGrayOnOffBreak/css.css);
+    @import url(./css/greenGrayOnOffBreak/css.css);
 
     .switch {
         height: 30px;

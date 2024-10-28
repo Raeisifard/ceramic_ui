@@ -27,3 +27,8 @@ npm run lint
 
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
+
+### Work around node version greater than 16
+```
+set NODE_OPTIONS=--openssl-legacy-provider 
+```

@@ -117,7 +117,7 @@ export default {
 
       async function run() {
         // Post the form, just make sure to set the 'Content-Type' header
-        const res = await that.$http.post('stt/form', gzip, {
+        const res = await that.$http.post(`http://${that.$store.getters.getConfig.vertxbus.BusAddress}/stt/form`, gzip, {
           headers: {
             'Content-Type': 'application/json',
             'Content-Encoding': 'gzip'
@@ -151,7 +151,7 @@ export default {
 
       async function run() {
         // Post the form, just make sure to set the 'Content-Type' header
-        const res = await that.$http.post('stt/form', gzip, {
+        const res = await that.$http.post(`http://${that.$store.getters.getConfig.vertxbus.BusAddress}/stt/form`, gzip, {
           headers: {
             'Content-Type': 'application/json',
             'Content-Encoding': 'gzip'
@@ -181,7 +181,7 @@ export default {
       let headers = {};
       that.$http({
         method: 'post',
-        url: 'stt/form',
+        url: `http://${that.$store.getters.getConfig.vertxbus.BusAddress}/stt/form`,
         //headers: headers,
         data: {
           cmd: "view",
@@ -198,8 +198,7 @@ export default {
     document.body.onclick = function() {
       that.open = false;
     };
-
-    this.$store.dispatch("setEb");
+    //this.$store.dispatch("setEb");
   },
   methods: {
     confirm($event) {
